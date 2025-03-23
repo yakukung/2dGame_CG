@@ -2,7 +2,7 @@ package Game;
 
 import com.jogamp.newt.event.MouseAdapter;
 import com.jogamp.newt.event.MouseEvent;
-import com.jogamp.opengl.GL2; 
+import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
@@ -15,57 +15,57 @@ import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 
 public class MainPage implements GLEventListener {
-    
+
     private TextRenderer textRenderer;
     public Rectangle2D startButtonRect;
     public boolean isHovering = false;
-    
+
     private Rectangle2D exitButtonRect;
     private boolean isExitHovering = false;
-    
+
     // สำหรับสีปุ่ม
-    private float[] buttonColor = {0.3f, 0.5f, 0.8f};
-    private float[] hoverColor = {0.4f, 0.6f, 0.9f};
-    
+    private float[] buttonColor = { 0.3f, 0.5f, 0.8f };
+    private float[] hoverColor = { 0.4f, 0.6f, 0.9f };
+
     // เพิ่ม texture พื้นหลัง
     private Texture backgroundTexture;
-    
+
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glClearColor(0, 0, 0, 0);
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
-        
+
         // วาดพื้นหลัง
         drawBackground(gl, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-        
+
         // วาดชื่อเกม
         textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         textRenderer.setColor(0.2f, 0.2f, 0.8f, 1.0f);
-        
+
         String gameTitle = "Robot Simulation Game";
         Rectangle2D titleBounds = textRenderer.getBounds(gameTitle);
-        int titleX = (int)((drawable.getSurfaceWidth() - titleBounds.getWidth()) / 2);
-        int titleY = (int)(drawable.getSurfaceHeight() * 0.7);
-        
+        int titleX = (int) ((drawable.getSurfaceWidth() - titleBounds.getWidth()) / 2);
+        int titleY = (int) (drawable.getSurfaceHeight() * 0.7);
+
         textRenderer.draw(gameTitle, titleX, titleY);
         textRenderer.endRendering();
-        
+
         // วาดปุ่มเริ่มเกม
         float buttonWidth = 200;
         float buttonHeight = 50;
         float buttonX = (drawable.getSurfaceWidth() - buttonWidth) / 2;
         float buttonY = drawable.getSurfaceHeight() / 2 - buttonHeight / 2;
-        
+
         startButtonRect = new Rectangle2D.Float(buttonX, buttonY, buttonWidth, buttonHeight);
-        
+
         // เลือกสีปุ่มตามสถานะ hover
         if (isHovering) {
             gl.glColor3f(hoverColor[0], hoverColor[1], hoverColor[2]);
         } else {
             gl.glColor3f(buttonColor[0], buttonColor[1], buttonColor[2]);
         }
-        
+
         // วาดปุ่ม
         gl.glBegin(GL2.GL_QUADS);
         gl.glVertex2f(buttonX, buttonY);
@@ -73,37 +73,36 @@ public class MainPage implements GLEventListener {
         gl.glVertex2f(buttonX + buttonWidth, buttonY + buttonHeight);
         gl.glVertex2f(buttonX, buttonY + buttonHeight);
         gl.glEnd();
-        
+
         // วาดข้อความบนปุ่ม
         Font thaiFont = new Font("TH Sarabun new", Font.PLAIN, 24);
         TextRenderer textRenderer = new TextRenderer(thaiFont, true, false);
-        
+
         textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        
+
         String buttonText = "เริ่มเกม";
-        
+
         Rectangle2D textBounds = textRenderer.getBounds(buttonText);
-        int textX = (int)(buttonX + (buttonWidth - textBounds.getWidth()) / 2);
-        int textY = (int)(buttonY + (buttonHeight - textBounds.getHeight()) / 2);
-        
+        int textX = (int) (buttonX + (buttonWidth - textBounds.getWidth()) / 2);
+        int textY = (int) (buttonY + (buttonHeight - textBounds.getHeight()) / 2);
+
         textRenderer.draw(buttonText, textX, textY);
         textRenderer.endRendering();
 
-                      
-     // วาดปุ่มออกจากเกม
+        // วาดปุ่มออกจากเกม
         float exitButtonWidth = 200;
         float exitButtonHeight = 50;
         float exitButtonX = (drawable.getSurfaceWidth() - exitButtonWidth) / 2;
-        float exitButtonY = buttonY - 70;  // ให้ต่ำกว่าปุ่มเริ่มเกม
+        float exitButtonY = buttonY - 70; // ให้ต่ำกว่าปุ่มเริ่มเกม
 
         exitButtonRect = new Rectangle2D.Float(exitButtonX, exitButtonY, exitButtonWidth, exitButtonHeight);
 
         // เลือกสีปุ่มออกจากเกม
         if (isExitHovering) {
-            gl.glColor3f(0.8f, 0.3f, 0.3f);  // สีแดงเข้มเมื่อ hover
+            gl.glColor3f(0.8f, 0.3f, 0.3f); // สีแดงเข้มเมื่อ hover
         } else {
-            gl.glColor3f(0.9f, 0.4f, 0.4f);  // สีแดงปกติ
+            gl.glColor3f(0.9f, 0.4f, 0.4f); // สีแดงปกติ
         }
 
         // วาดปุ่มออกจากเกม
@@ -116,17 +115,16 @@ public class MainPage implements GLEventListener {
 
         // วาดข้อความบนปุ่มออกจากเกม
         textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f); 
+        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         String exitText = "ออกจากเกม";
         Rectangle2D exitTextBounds = textRenderer.getBounds(exitText);
-        int exitTextX = (int)(exitButtonX + (exitButtonWidth - exitTextBounds.getWidth()) / 2);
-        int exitTextY = (int)(exitButtonY + (exitButtonHeight - exitTextBounds.getHeight()) / 2);
+        int exitTextX = (int) (exitButtonX + (exitButtonWidth - exitTextBounds.getWidth()) / 2);
+        int exitTextY = (int) (exitButtonY + (exitButtonHeight - exitTextBounds.getHeight()) / 2);
 
         textRenderer.draw(exitText, exitTextX, exitTextY);
         textRenderer.endRendering();
-        
-        
+
         // ทำให้แน่ใจว่าทุกคำสั่งถูกประมวลผล
         gl.glFlush();
     }
@@ -136,14 +134,18 @@ public class MainPage implements GLEventListener {
             gl.glEnable(GL2.GL_TEXTURE_2D);
             backgroundTexture.bind(gl);
             gl.glColor3f(1.0f, 1.0f, 1.0f);
-            
+
             gl.glBegin(GL2.GL_QUADS);
-            gl.glTexCoord2f(0.0f, 0.0f); gl.glVertex2f(0, 0);
-            gl.glTexCoord2f(1.0f, 0.0f); gl.glVertex2f(width, 0);
-            gl.glTexCoord2f(1.0f, 1.0f); gl.glVertex2f(width, height);
-            gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f(0, height);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(0, 0);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(width, 0);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(width, height);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(0, height);
             gl.glEnd();
-            
+
             gl.glDisable(GL2.GL_TEXTURE_2D);
         }
     }
@@ -161,6 +163,8 @@ public class MainPage implements GLEventListener {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 24));
 
+        System.out.println("MainPage initialized"); // Debugging statement
+
         try {
             File backgroundFile = new File("D:\\Computer Graphics\\Project2D\\BG.jpg");
             if (backgroundFile.exists()) {
@@ -174,27 +178,27 @@ public class MainPage implements GLEventListener {
         }
 
         Randers.getWindow().addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mousePressed(MouseEvent e) {
-        	    int mouseX = e.getX();
-        	    int mouseY = e.getY();  // เปลี่ยนจาก Randers.getWindow().getHeight() - e.getY()
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int mouseX = e.getX();
+                int mouseY = e.getY();
 
+                if (startButtonRect != null && startButtonRect.contains(mouseX, mouseY)) {
+                    System.out.println("กดปุ่มเริ่มเกม!");
+                    goToLevelSelection(); // Transition to LevelSelection
+                }
 
-
-        	    if (startButtonRect != null && startButtonRect.contains(mouseX, mouseY)) {
-        	        System.out.println("กดปุ่มเริ่มเกม!");
-        	        Randers.setGLEventListener(new Robot());
-        	    }
-        	    
-        	    if (exitButtonRect != null && exitButtonRect.contains(mouseX, drawable.getSurfaceHeight() - mouseY)) {
-        	        System.out.println("ออกจากเกม!");
-        	        Randers.getWindow().destroy();  // ปิดหน้าต่างของ JOGL
-        	        System.exit(0);  // ปิดโปรแกรม
-        	    }
-
-        	}
-
+                if (exitButtonRect != null && exitButtonRect.contains(mouseX, drawable.getSurfaceHeight() - mouseY)) {
+                    System.out.println("ออกจากเกม!");
+                    Randers.getWindow().destroy(); // Close JOGL window
+                    System.exit(0); // Exit program
+                }
+            }
         });
+    }
+
+    private void goToLevelSelection() {
+        Randers.setGLEventListener(new LevelSelection());
     }
 
     @Override

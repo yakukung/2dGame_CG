@@ -20,10 +20,10 @@ public class Randers implements GLEventListener {
         window.setSize(640, 640);
         window.setResizable(false);
         window.setTitle("หุ่นยนต์ 2D");
-        
+
         // Set initial listener
         setGLEventListener(new MainPage());
-        
+
         FPSAnimator animator = new FPSAnimator(window, 60);
         animator.start();
         window.setVisible(true);

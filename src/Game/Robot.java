@@ -3,16 +3,19 @@ package Game;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
+import com.jogamp.graph.ui.shapes.Rectangle;
 import com.jogamp.newt.event.KeyAdapter;
 import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.MouseAdapter;
+import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.newt.opengl.GLWindow;
-
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import java.io.File;
 import java.io.IOException;
 import java.awt.Font;
+import java.awt.geom.Rectangle2D;
 
 public class Robot implements GLEventListener {
     private float x, y;
@@ -38,8 +41,10 @@ public class Robot implements GLEventListener {
     private Item item;
     private GameUI gameUI;
 
-    public Robot() {
-        maze = new Maze();
+    private Rectangle2D mainPageButtonRect; // Define button area
+
+    public Robot(Maze maze) {
+        this.maze = maze;
         item = new Item();
         gameUI = new GameUI();
         resetPosition();
@@ -76,8 +81,6 @@ public class Robot implements GLEventListener {
 
         int nextX = (int) ((x + dx - mazeOffsetX) / width);
         int nextY = (int) ((y + dy - mazeOffsetY) / height);
-
-        
 
         if (maze.isWalkable(nextX, nextY)) {
             if (maze.isExit(nextX, nextY)) {
@@ -134,6 +137,7 @@ public class Robot implements GLEventListener {
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 24));
+        mainPageButtonRect = new Rectangle2D.Float(10, screenHeight - 60, 100, 50); // Define button area
 
         screenWidth = drawable.getSurfaceWidth();
         screenHeight = drawable.getSurfaceHeight();
@@ -208,6 +212,21 @@ public class Robot implements GLEventListener {
                 }
             }
         });
+
+        window.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (mainPageButtonRect.contains(e.getX(), e.getY())) {
+                    goToMainPage();
+                }
+            }
+        });
+    }
+
+    private void goToMainPage() {
+        // Logic to switch to the MainPage
+        System.out.println("Returning to MainPage");
+        // Implement the logic to change the game state or scene
     }
 
     @Override
@@ -231,16 +250,18 @@ public class Robot implements GLEventListener {
                 gl.glColor3f(1.0f, 1.0f, 1.0f);
 
                 gl.glBegin(GL2.GL_QUADS);
-                gl.glTexCoord2f(0.0f, 0.0f); gl.glVertex2f(x, y);
-                gl.glTexCoord2f(1.0f, 0.0f); gl.glVertex2f(x + width, y);
-                gl.glTexCoord2f(1.0f, 1.0f); gl.glVertex2f(x + width, y + height);
-                gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f(x, y + height);
+                gl.glTexCoord2f(0.0f, 0.0f);
+                gl.glVertex2f(x, y);
+                gl.glTexCoord2f(1.0f, 0.0f);
+                gl.glVertex2f(x + width, y);
+                gl.glTexCoord2f(1.0f, 1.0f);
+                gl.glVertex2f(x + width, y + height);
+                gl.glTexCoord2f(0.0f, 1.0f);
+                gl.glVertex2f(x, y + height);
                 gl.glEnd();
 
                 gl.glDisable(GL2.GL_TEXTURE_2D);
             }
-
-
             // Draw items
             item.draw(gl);
 
@@ -375,6 +396,6 @@ public class Robot implements GLEventListener {
         screenHeight = height;
         calculateCenterPosition();
         resetPosition();
-        item.updatePositions(mazeOffsetX, mazeOffsetY, this.width, this.height);
+        item.updatePositions(mazeOffsetX, mazeOffsetY, this.width, this.height, maze); // Pass maze object
     }
 }

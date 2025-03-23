@@ -12,6 +12,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import Game.MazeLV_1;
+import Game.MazeLV_2;
+import Game.MazeLV_3;
+
 public class LevelSelection implements GLEventListener {
     private TextRenderer textRenderer;
     private List<Rectangle2D> levelButtons;
@@ -24,7 +28,7 @@ public class LevelSelection implements GLEventListener {
         textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 24));
 
         levelButtons = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             levelButtons.add(new Rectangle2D.Float(100, 400 - i * 60, 200, 50));
         }
 
@@ -38,8 +42,16 @@ public class LevelSelection implements GLEventListener {
                     if (levelButtons.get(i).contains(mouseX, mouseY)) {
                         selectedLevel = i + 1;
                         System.out.println("Selected Level: " + selectedLevel);
-                        if (selectedLevel == 1) {
-                            Randers.setGLEventListener(new GameScreen()); // Ensure this line is executed
+                        switch (selectedLevel) {
+                            case 1:
+                                Randers.setGLEventListener(new Robot(new MazeLV_1()));
+                                break;
+                            case 2:
+                                Randers.setGLEventListener(new Robot(new MazeLV_2()));
+                                break;
+                            case 3:
+                                Randers.setGLEventListener(new Robot(new MazeLV_3()));
+                                break;
                         }
                     }
                 }
@@ -58,7 +70,7 @@ public class LevelSelection implements GLEventListener {
 
         for (int i = 0; i < levelButtons.size(); i++) {
             Rectangle2D button = levelButtons.get(i);
-            textRenderer.draw("" + (i + 1), (int) button.getX() + 10, (int) button.getY() + 30);
+            textRenderer.draw("Level " + (i + 1), (int) button.getX() + 10, (int) button.getY() + 30);
         }
 
         textRenderer.endRendering();

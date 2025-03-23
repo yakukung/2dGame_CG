@@ -52,14 +52,52 @@ public class Item {
             return;
         }
 
-        // Fixed position where mazeData is 0
-        int newItemX = 5; // X-coordinate in the maze
-        int newItemY = 2; // Y-coordinate in the maze
+        int newItemX, newItemY;
+
+        // Determine item position based on maze level
+        if (maze instanceof MazeLV_1) {
+            newItemX = 5; // X-coordinate for MazeLV_1
+            newItemY = 2; // Y-coordinate for MazeLV_1
+        } else if (maze instanceof MazeLV_2) {
+            newItemX = 3; // X-coordinate for MazeLV_2
+            newItemY = 4; // Y-coordinate for MazeLV_2
+        } else if (maze instanceof MazeLV_3) {
+            newItemX = 7; // X-coordinate for MazeLV_3
+            newItemY = 6; // Y-coordinate for MazeLV_3
+        } else {
+            newItemX = 5; // Default X-coordinate
+            newItemY = 2; // Default Y-coordinate
+        }
 
         // Convert maze position to screen coordinates
         x = mazeOffsetX + newItemX * cellWidth + (cellWidth - size) / 2;
         y = mazeOffsetY + newItemY * cellHeight + (cellHeight - size) / 2;
         collected = false;
+    }
+
+    public void updatePositions(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
+        if (!collected) {
+            int newItemX, newItemY;
+
+            // Determine item position based on maze level
+            if (maze instanceof MazeLV_1) {
+                newItemX = 5; // X-coordinate for MazeLV_1
+                newItemY = 2; // Y-coordinate for MazeLV_1
+            } else if (maze instanceof MazeLV_2) {
+                newItemX = 3; // X-coordinate for MazeLV_2
+                newItemY = 5; // Y-coordinate for MazeLV_2
+            } else if (maze instanceof MazeLV_3) {
+                newItemX = 7; // X-coordinate for MazeLV_3
+                newItemY = 7; // Y-coordinate for MazeLV_3
+            } else {
+                newItemX = 5; // Default X-coordinate
+                newItemY = 2; // Default Y-coordinate
+            }
+
+            // Update to fixed screen coordinates
+            x = mazeOffsetX + newItemX * cellWidth + (cellWidth - size) / 2;
+            y = mazeOffsetY + newItemY * cellHeight + (cellHeight - size) / 2;
+        }
     }
 
     public void draw(GL2 gl) {
@@ -71,18 +109,6 @@ public class Item {
             gl.glVertex2f(x + size, y + size);
             gl.glVertex2f(x, y + size);
             gl.glEnd();
-        }
-    }
-
-    public void updatePositions(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight) {
-        // Keep the item at the fixed position (5, 2) when the window is resized
-        if (!collected) {
-            int newItemX = 5; // X-coordinate in the maze
-            int newItemY = 2; // Y-coordinate in the maze
-
-            // Update to fixed screen coordinates
-            x = mazeOffsetX + newItemX * cellWidth + (cellWidth - size) / 2;
-            y = mazeOffsetY + newItemY * cellHeight + (cellHeight - size) / 2;
         }
     }
 

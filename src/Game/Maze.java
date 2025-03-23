@@ -10,25 +10,19 @@ import java.io.File;
 import java.io.IOException;
 
 public class Maze implements GLEventListener {
-    private Texture wallTexture;
-    private final int[][] mazeData = {
-            { 1, 0, 1, 1, 1, 1, 1, 1, 1, 1 },
-            { 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 },
-            { 1, 0, 1, 0, 1, 0, 1, 1, 0, 1 },
-            { 1, 0, 1, 0, 0, 0, 1, 0, 0, 1 },
-            { 1, 0, 1, 1, 1, 1, 1, 0, 1, 1 },
-            { 1, 0, 0, 0, 0, 0, 1, 0, 0, 1 },
-            { 1, 1, 1, 1, 1, 0, 1, 1, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 1, 1, 1, 1, 1, 1, 0, 1 },
-            { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1 }
-    };
-
-    private final int mazeWidth = 10;
-    private final int mazeHeight = 10;
+    protected Texture wallTexture;
+    protected int[][] mazeData;
+    protected int mazeWidth;
+    protected int mazeHeight;
 
     public Maze() {
-        // Constructor
+        // Default constructor
+    }
+
+    public Maze(int[][] mazeData) {
+        this.mazeData = mazeData;
+        this.mazeWidth = mazeData[0].length;
+        this.mazeHeight = mazeData.length;
     }
 
     @Override
@@ -131,4 +125,58 @@ public class Maze implements GLEventListener {
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         // Implement reshape logic if needed
     }
+}
+
+//Maze Level 1
+class MazeLV_1 extends Maze {
+ public MazeLV_1() {
+     super(new int[][] {
+             { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+             { 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 },
+             { 1, 0, 1, 0, 1, 0, 1, 1, 0, 1 },
+             { 1, 0, 1, 0, 0, 0, 1, 0, 0, 1 },
+             { 1, 0, 1, 1, 1, 1, 1, 0, 1, 1 },
+             { 1, 0, 0, 0, 0, 0, 1, 0, 0, 1 },
+             { 1, 1, 1, 1, 1, 0, 1, 1, 0, 1 },
+             { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+             { 1, 0, 1, 1, 1, 1, 1, 1, 0, 1 },
+             { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1 }
+     });
+ }
+}
+
+//Maze Level 2
+class MazeLV_2 extends Maze {
+ public MazeLV_2() {
+     super(new int[][]{
+         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+         {1, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+         {1, 0, 1, 0, 1, 0, 1, 1, 0, 1},
+         {1, 0, 1, 0, 0, 0, 1, 0, 0, 1},
+         {1, 0, 1, 1, 1, 1, 1, 0, 1, 1},
+         {1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+         {1, 1, 1, 0, 0, 0, 1, 1, 0, 1},
+         {1, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+         {1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+         {1, 1, 1, 1, 1, 1, 1, 1, 2, 1}
+     });
+ }
+}
+
+//Maze Level 3
+class MazeLV_3 extends Maze {
+ public MazeLV_3() {
+     super(new int[][]{
+         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+         {1, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+         {1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+         {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+         {1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
+         {1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+         {1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+         {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+         {1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+         {1, 1, 1, 1, 1, 1, 1, 1, 2, 1}
+     });
+ }
 }
