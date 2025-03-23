@@ -19,6 +19,7 @@ import Game.MazeLV_3;
 public class LevelSelection implements GLEventListener {
     private TextRenderer textRenderer;
     private List<Rectangle2D> levelButtons;
+    private Rectangle2D mainPageButtonRect;
     private int selectedLevel = -1;
 
     @Override
@@ -39,6 +40,14 @@ public class LevelSelection implements GLEventListener {
             int xPosition = startX + i * (buttonWidth + spacing);
             levelButtons.add(new Rectangle2D.Float(xPosition, yPosition, buttonWidth, buttonHeight));
         }
+
+        // Define the MainPage button position
+        int mainPageButtonWidth = 150;
+        int mainPageButtonHeight = 40;
+        int mainPageButtonX = (drawable.getSurfaceWidth() - mainPageButtonWidth) / 2;
+        int mainPageButtonY = yPosition + buttonHeight + 60; // Position below the level buttons
+        mainPageButtonRect = new Rectangle2D.Float(mainPageButtonX, mainPageButtonY, mainPageButtonWidth,
+                mainPageButtonHeight);
 
         Randers.getWindow().addMouseListener(new MouseAdapter() {
             @Override
@@ -63,6 +72,12 @@ public class LevelSelection implements GLEventListener {
                         }
                     }
                 }
+
+                // Check if the MainPage button is clicked
+                if (mainPageButtonRect.contains(mouseX, mouseY)) {
+                    System.out.println("Returning to MainPage");
+                    Randers.setGLEventListener(new MainPage());
+                }
             }
         });
     }
@@ -83,6 +98,15 @@ public class LevelSelection implements GLEventListener {
             int textY = (int) (button.getY() + (button.getHeight() - textBounds.getHeight()) / 2);
             textRenderer.draw(levelText, textX, textY);
         }
+
+        // Draw the MainPage button
+        String mainPageText = "Main Page";
+        Rectangle2D mainPageTextBounds = textRenderer.getBounds(mainPageText);
+        int mainPageTextX = (int) (mainPageButtonRect.getX()
+                + (mainPageButtonRect.getWidth() - mainPageTextBounds.getWidth()) / 2);
+        int mainPageTextY = (int) (mainPageButtonRect.getY()
+                + (mainPageButtonRect.getHeight() - mainPageTextBounds.getHeight()) / 2);
+        textRenderer.draw(mainPageText, mainPageTextX, mainPageTextY);
 
         textRenderer.endRendering();
     }
@@ -116,5 +140,12 @@ public class LevelSelection implements GLEventListener {
             int xPosition = startX + i * (buttonWidth + spacing);
             levelButtons.set(i, new Rectangle2D.Float(xPosition, yPosition, buttonWidth, buttonHeight));
         }
+
+        // Update MainPage button position
+        int mainPageButtonWidth = 150;
+        int mainPageButtonHeight = 40;
+        int mainPageButtonX = (width - mainPageButtonWidth) / 2;
+        int mainPageButtonY = yPosition + buttonHeight + 60;
+        mainPageButtonRect.setRect(mainPageButtonX, mainPageButtonY, mainPageButtonWidth, mainPageButtonHeight);
     }
 }

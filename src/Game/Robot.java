@@ -42,6 +42,8 @@ public class Robot implements GLEventListener {
     private GameUI gameUI;
 
     private Rectangle2D mainPageButtonRect; // Define button area
+    private Rectangle2D pauseButtonRect; // Define pause button area
+    private Rectangle2D restartButtonRect; // Define restart button area
 
     public Robot(Maze maze) {
         this.maze = maze;
@@ -144,6 +146,10 @@ public class Robot implements GLEventListener {
 
         calculateCenterPosition();
 
+        mainPageButtonRect = new Rectangle2D.Float(screenWidth - 110, screenHeight - 40, 100, 30);
+        pauseButtonRect = new Rectangle2D.Float(screenWidth - 220, screenHeight - 40, 100, 30);
+        restartButtonRect = new Rectangle2D.Float(screenWidth - 330, screenHeight - 40, 100, 30);
+
         // Load wall texture
         try {
             File wallFile = new File("D:\\Computer Graphics\\Project2D\\wall.jpg");
@@ -216,8 +222,22 @@ public class Robot implements GLEventListener {
         window.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (mainPageButtonRect.contains(e.getX(), e.getY())) {
+                float mouseX = e.getX();
+                float mouseY = screenHeight - e.getY(); // Convert to OpenGL coordinates
+
+                // Check if the MainPage button is clicked
+                if (mainPageButtonRect.contains(mouseX, mouseY)) {
                     goToMainPage();
+                }
+
+                // Check if the pause button is clicked
+                if (pauseButtonRect.contains(mouseX, mouseY)) {
+                    togglePause();
+                }
+
+                // Check if the restart button is clicked
+                if (restartButtonRect.contains(mouseX, mouseY)) {
+                    restartGame();
                 }
             }
         });
@@ -226,7 +246,7 @@ public class Robot implements GLEventListener {
     private void goToMainPage() {
         // Logic to switch to the MainPage
         System.out.println("Returning to MainPage");
-        // Implement the logic to change the game state or scene
+        Randers.setGLEventListener(new MainPage());
     }
 
     @Override
@@ -275,6 +295,38 @@ public class Robot implements GLEventListener {
                 gameUI.drawGameOverScreen(textRenderer, screenWidth, screenHeight);
             }
         }
+
+        // Draw buttons
+        textRenderer.beginRendering(screenWidth, screenHeight);
+        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+        // Draw Main Page button
+        String mainPageText = "Main Page";
+        Rectangle2D mainPageTextBounds = textRenderer.getBounds(mainPageText);
+        int mainPageTextX = (int) (mainPageButtonRect.getX()
+                + (mainPageButtonRect.getWidth() - mainPageTextBounds.getWidth()) / 2);
+        int mainPageTextY = (int) (mainPageButtonRect.getY()
+                + (mainPageButtonRect.getHeight() - mainPageTextBounds.getHeight()) / 2);
+        textRenderer.draw(mainPageText, mainPageTextX, mainPageTextY);
+
+        // Draw Pause button
+        String pauseText = "Pause";
+        Rectangle2D pauseTextBounds = textRenderer.getBounds(pauseText);
+        int pauseTextX = (int) (pauseButtonRect.getX() + (pauseButtonRect.getWidth() - pauseTextBounds.getWidth()) / 2);
+        int pauseTextY = (int) (pauseButtonRect.getY()
+                + (pauseButtonRect.getHeight() - pauseTextBounds.getHeight()) / 2);
+        textRenderer.draw(pauseText, pauseTextX, pauseTextY);
+
+        // Draw Restart button
+        String restartText = "Restart";
+        Rectangle2D restartTextBounds = textRenderer.getBounds(restartText);
+        int restartTextX = (int) (restartButtonRect.getX()
+                + (restartButtonRect.getWidth() - restartTextBounds.getWidth()) / 2);
+        int restartTextY = (int) (restartButtonRect.getY()
+                + (restartButtonRect.getHeight() - restartTextBounds.getHeight()) / 2);
+        textRenderer.draw(restartText, restartTextX, restartTextY);
+
+        textRenderer.endRendering();
     }
 
     private void drawMaze(GL2 gl, float offsetX, float offsetY, float cellWidth, float cellHeight) {
