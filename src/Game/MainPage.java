@@ -30,6 +30,9 @@ public class MainPage implements GLEventListener {
     // เพิ่ม texture พื้นหลัง
     private Texture backgroundTexture;
 
+    private Texture nameGameTexture;
+    private Texture heartTexture; // Add a new field for the heart texture
+
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -39,17 +42,29 @@ public class MainPage implements GLEventListener {
         // วาดพื้นหลัง
         drawBackground(gl, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 
-        // วาดชื่อเกม
-        textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-        textRenderer.setColor(0.2f, 0.2f, 0.8f, 1.0f);
+        // Draw the heart texture
+        if (heartTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            heartTexture.bind(gl);
 
-        String gameTitle = "Robot Simulation Game";
-        Rectangle2D titleBounds = textRenderer.getBounds(gameTitle);
-        int titleX = (int) ((drawable.getSurfaceWidth() - titleBounds.getWidth()) / 2);
-        int titleY = (int) (drawable.getSurfaceHeight() * 0.7);
+            float imageWidth = heartTexture.getWidth();
+            float imageHeight = heartTexture.getHeight();
+            float imageX = (drawable.getSurfaceWidth() - imageWidth) / 2;
+            float imageY = drawable.getSurfaceHeight() * 0.7f - imageHeight / 2;
 
-        textRenderer.draw(gameTitle, titleX, titleY);
-        textRenderer.endRendering();
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(imageX, imageY);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(imageX + imageWidth, imageY);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(imageX + imageWidth, imageY + imageHeight);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(imageX, imageY + imageHeight);
+            gl.glEnd();
+
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
 
         // วาดปุ่มเริ่มเกม
         float buttonWidth = 200;
@@ -172,8 +187,21 @@ public class MainPage implements GLEventListener {
             } else {
                 System.err.println("ไม่พบไฟล์รูปภาพพื้นหลัง: " + backgroundFile.getAbsolutePath());
             }
+
+            // Load the NameGame texture
+            File heartFile = new File("D:\\Computer Graphics\\Project2D\\NameGame.png");
+            if (heartFile.exists()) {
+                heartTexture = TextureIO.newTexture(heartFile, true);
+                System.out.println("Heart texture loaded successfully");
+
+                // Enable blending for transparency
+                gl.glEnable(GL2.GL_BLEND);
+                gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+            } else {
+                System.err.println("Heart texture file not found: " + heartFile.getAbsolutePath());
+            }
         } catch (IOException e) {
-            System.err.println("ไม่สามารถโหลดรูปภาพพื้นหลังได้: " + e.getMessage());
+            System.err.println("Failed to load heart texture: " + e.getMessage());
             e.printStackTrace();
         }
 
