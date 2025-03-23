@@ -19,7 +19,6 @@ public class GameScreen implements GLEventListener {
 
         // Initialize the Robot
         robot = new Robot(); // Starting position (x, y)
-        robot.init(drawable); // Initialize robot with drawable context
     }
 
     @Override
