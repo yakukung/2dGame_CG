@@ -28,8 +28,16 @@ public class LevelSelection implements GLEventListener {
         textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 24));
 
         levelButtons = new ArrayList<>();
+        int buttonWidth = 200;
+        int buttonHeight = 50;
+        int spacing = 20;
+        int totalWidth = (buttonWidth + spacing) * 3 - spacing;
+        int startX = (drawable.getSurfaceWidth() - totalWidth) / 2;
+        int yPosition = drawable.getSurfaceHeight() / 2;
+
         for (int i = 0; i < 3; i++) {
-            levelButtons.add(new Rectangle2D.Float(100, 400 - i * 60, 200, 50));
+            int xPosition = startX + i * (buttonWidth + spacing);
+            levelButtons.add(new Rectangle2D.Float(xPosition, yPosition, buttonWidth, buttonHeight));
         }
 
         Randers.getWindow().addMouseListener(new MouseAdapter() {
@@ -66,11 +74,14 @@ public class LevelSelection implements GLEventListener {
 
         textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        textRenderer.draw("Select a Level", 100, drawable.getSurfaceHeight() - 50);
 
         for (int i = 0; i < levelButtons.size(); i++) {
             Rectangle2D button = levelButtons.get(i);
-            textRenderer.draw("Level " + (i + 1), (int) button.getX() + 10, (int) button.getY() + 30);
+            String levelText = "Level " + (i + 1);
+            Rectangle2D textBounds = textRenderer.getBounds(levelText);
+            int textX = (int) (button.getX() + (button.getWidth() - textBounds.getWidth()) / 2);
+            int textY = (int) (button.getY() + (button.getHeight() - textBounds.getHeight()) / 2);
+            textRenderer.draw(levelText, textX, textY);
         }
 
         textRenderer.endRendering();
@@ -92,5 +103,18 @@ public class LevelSelection implements GLEventListener {
         gl.glOrtho(0, width, 0, height, -1, 1);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+
+        // Recalculate button positions to keep them centered
+        int buttonWidth = 200;
+        int buttonHeight = 50;
+        int spacing = 20;
+        int totalWidth = (buttonWidth + spacing) * 3 - spacing;
+        int startX = (width - totalWidth) / 2;
+        int yPosition = height / 2;
+
+        for (int i = 0; i < levelButtons.size(); i++) {
+            int xPosition = startX + i * (buttonWidth + spacing);
+            levelButtons.set(i, new Rectangle2D.Float(xPosition, yPosition, buttonWidth, buttonHeight));
+        }
     }
 }
