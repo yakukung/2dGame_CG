@@ -44,6 +44,7 @@ public class Robot implements GLEventListener {
     private Rectangle2D mainPageButtonRect; // Define button area
     private Rectangle2D pauseButtonRect; // Define pause button area
     private Rectangle2D restartButtonRect; // Define restart button area
+    private Rectangle2D levelSelectionButtonRect;
 
     public Robot(Maze maze) {
         this.maze = maze;
@@ -149,6 +150,7 @@ public class Robot implements GLEventListener {
         mainPageButtonRect = new Rectangle2D.Float(screenWidth - 110, screenHeight - 40, 100, 30);
         pauseButtonRect = new Rectangle2D.Float(screenWidth - 220, screenHeight - 40, 100, 30);
         restartButtonRect = new Rectangle2D.Float(screenWidth - 330, screenHeight - 40, 100, 30);
+        levelSelectionButtonRect = new Rectangle2D.Float(screenWidth - 440, screenHeight - 40, 100, 30);
 
         // Load wall texture
         try {
@@ -239,6 +241,11 @@ public class Robot implements GLEventListener {
                 if (restartButtonRect.contains(mouseX, mouseY)) {
                     restartGame();
                 }
+
+                // Check if the level selection button is clicked
+                if (levelSelectionButtonRect.contains(mouseX, mouseY)) {
+                    goToLevelSelection();
+                }
             }
         });
     }
@@ -247,6 +254,12 @@ public class Robot implements GLEventListener {
         // Logic to switch to the MainPage
         System.out.println("Returning to MainPage");
         Randers.setGLEventListener(new MainPage());
+    }
+
+    private void goToLevelSelection() {
+        // Logic to switch to the LevelSelection
+        System.out.println("Returning to Level Selection");
+        Randers.setGLEventListener(new LevelSelection());
     }
 
     @Override
@@ -300,6 +313,10 @@ public class Robot implements GLEventListener {
         textRenderer.beginRendering(screenWidth, screenHeight);
         textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+        // Draw buttons
+        textRenderer.beginRendering(screenWidth, screenHeight);
+        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+
         // Draw Main Page button
         String mainPageText = "Main Page";
         Rectangle2D mainPageTextBounds = textRenderer.getBounds(mainPageText);
@@ -325,6 +342,15 @@ public class Robot implements GLEventListener {
         int restartTextY = (int) (restartButtonRect.getY()
                 + (restartButtonRect.getHeight() - restartTextBounds.getHeight()) / 2);
         textRenderer.draw(restartText, restartTextX, restartTextY);
+
+        // Draw Level Selection button
+        String levelSelectionText = "Levels";
+        Rectangle2D levelSelectionTextBounds = textRenderer.getBounds(levelSelectionText);
+        int levelSelectionTextX = (int) (levelSelectionButtonRect.getX()
+                + (levelSelectionButtonRect.getWidth() - levelSelectionTextBounds.getWidth()) / 2);
+        int levelSelectionTextY = (int) (levelSelectionButtonRect.getY()
+                + (levelSelectionButtonRect.getHeight() - levelSelectionTextBounds.getHeight()) / 2);
+        textRenderer.draw(levelSelectionText, levelSelectionTextX, levelSelectionTextY);
 
         textRenderer.endRendering();
     }
@@ -449,5 +475,11 @@ public class Robot implements GLEventListener {
         calculateCenterPosition();
         resetPosition();
         item.updatePositions(mazeOffsetX, mazeOffsetY, this.width, this.height, maze); // Pass maze object
+
+        // Recalculate button positions to keep them in the top-right corner
+        mainPageButtonRect.setRect(screenWidth - 110, screenHeight - 40, 100, 30);
+        pauseButtonRect.setRect(screenWidth - 220, screenHeight - 40, 100, 30);
+        restartButtonRect.setRect(screenWidth - 330, screenHeight - 40, 100, 30);
+        levelSelectionButtonRect.setRect(screenWidth - 440, screenHeight - 40, 100, 30);
     }
 }
