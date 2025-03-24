@@ -69,7 +69,11 @@ public class LevelSelection implements GLEventListener {
                             case 3:
                                 Randers.setGLEventListener(new Robot(new MazeLV_3()));
                                 break;
+                            default:
+                                System.out.println("Invalid level selected");
+                                break;
                         }
+                        return; // Exit after setting the listener
                     }
                 }
 
