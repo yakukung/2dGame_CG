@@ -59,11 +59,11 @@ public class Item {
             newItemX = 5; // X-coordinate for MazeLV_1
             newItemY = 2; // Y-coordinate for MazeLV_1
         } else if (maze instanceof MazeLV_2) {
-            newItemX = 3; // X-coordinate for MazeLV_2
-            newItemY = 4; // Y-coordinate for MazeLV_2
+        	 newItemX = 3; // X-coordinate for MazeLV_2
+             newItemY = 5; // Y-coordinate for MazeLV_2
         } else if (maze instanceof MazeLV_3) {
-            newItemX = 7; // X-coordinate for MazeLV_3
-            newItemY = 6; // Y-coordinate for MazeLV_3
+        	newItemX = 7; // X-coordinate for MazeLV_3
+            newItemY = 7; // Y-coordinate for MazeLV_3
         } else {
             newItemX = 5; // Default X-coordinate
             newItemY = 2; // Default Y-coordinate

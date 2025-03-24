@@ -21,17 +21,12 @@ public class MainPage implements GLEventListener {
     public boolean isHovering = false;
 
     private Rectangle2D exitButtonRect;
-    private boolean isExitHovering = false;
-
-    // สำหรับสีปุ่ม
-    private float[] buttonColor = { 0.3f, 0.5f, 0.8f };
-    private float[] hoverColor = { 0.4f, 0.6f, 0.9f };
 
     // เพิ่ม texture พื้นหลัง
     private Texture backgroundTexture;
-
+    private Texture startButtonTexture;
+    private Texture ExitButtonTexture;
     private Texture nameGameTexture;
-    private Texture heartTexture; // Add a new field for the heart texture
 
     @Override
     public void display(GLAutoDrawable drawable) {
@@ -42,13 +37,13 @@ public class MainPage implements GLEventListener {
         // วาดพื้นหลัง
         drawBackground(gl, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 
-        // Draw the heart texture
-        if (heartTexture != null) {
+        // Draw the nameGameTexture
+        if (nameGameTexture != null) {
             gl.glEnable(GL2.GL_TEXTURE_2D);
-            heartTexture.bind(gl);
+            nameGameTexture.bind(gl);
 
-            float imageWidth = heartTexture.getWidth();
-            float imageHeight = heartTexture.getHeight();
+            float imageWidth = nameGameTexture.getWidth();
+            float imageHeight = nameGameTexture.getHeight();
             float imageX = (drawable.getSurfaceWidth() - imageWidth) / 2;
             float imageY = drawable.getSurfaceHeight() * 0.7f - imageHeight / 2;
 
@@ -66,79 +61,57 @@ public class MainPage implements GLEventListener {
             gl.glDisable(GL2.GL_TEXTURE_2D);
         }
 
-        // วาดปุ่มเริ่มเกม
-        float buttonWidth = 200;
-        float buttonHeight = 50;
+        // Draw the start button as an image with increased size
+        float buttonWidth = 250; // Increased width
+        float buttonHeight = 75; // Increased height
         float buttonX = (drawable.getSurfaceWidth() - buttonWidth) / 2;
         float buttonY = drawable.getSurfaceHeight() / 2 - buttonHeight / 2;
 
         startButtonRect = new Rectangle2D.Float(buttonX, buttonY, buttonWidth, buttonHeight);
 
-        // เลือกสีปุ่มตามสถานะ hover
-        if (isHovering) {
-            gl.glColor3f(hoverColor[0], hoverColor[1], hoverColor[2]);
-        } else {
-            gl.glColor3f(buttonColor[0], buttonColor[1], buttonColor[2]);
+        if (startButtonTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            startButtonTexture.bind(gl);
+
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(buttonX, buttonY);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(buttonX + buttonWidth, buttonY);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(buttonX + buttonWidth, buttonY + buttonHeight);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(buttonX, buttonY + buttonHeight);
+            gl.glEnd();
+
+            gl.glDisable(GL2.GL_TEXTURE_2D);
         }
 
-        // วาดปุ่ม
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glVertex2f(buttonX, buttonY);
-        gl.glVertex2f(buttonX + buttonWidth, buttonY);
-        gl.glVertex2f(buttonX + buttonWidth, buttonY + buttonHeight);
-        gl.glVertex2f(buttonX, buttonY + buttonHeight);
-        gl.glEnd();
-
-        // วาดข้อความบนปุ่ม
-        Font thaiFont = new Font("TH Sarabun new", Font.PLAIN, 24);
-        TextRenderer textRenderer = new TextRenderer(thaiFont, true, false);
-
-        textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        String buttonText = "เริ่มเกม";
-
-        Rectangle2D textBounds = textRenderer.getBounds(buttonText);
-        int textX = (int) (buttonX + (buttonWidth - textBounds.getWidth()) / 2);
-        int textY = (int) (buttonY + (buttonHeight - textBounds.getHeight()) / 2);
-
-        textRenderer.draw(buttonText, textX, textY);
-        textRenderer.endRendering();
-
-        // วาดปุ่มออกจากเกม
-        float exitButtonWidth = 200;
-        float exitButtonHeight = 50;
+        // Draw the exit button as an image
+        float exitButtonWidth = 250; // Same width as start button
+        float exitButtonHeight = 75; // Same height as start button
         float exitButtonX = (drawable.getSurfaceWidth() - exitButtonWidth) / 2;
-        float exitButtonY = buttonY - 70; // ให้ต่ำกว่าปุ่มเริ่มเกม
+        float exitButtonY = buttonY - 120; // Adjust position to be below the start button
 
         exitButtonRect = new Rectangle2D.Float(exitButtonX, exitButtonY, exitButtonWidth, exitButtonHeight);
 
-        // เลือกสีปุ่มออกจากเกม
-        if (isExitHovering) {
-            gl.glColor3f(0.8f, 0.3f, 0.3f); // สีแดงเข้มเมื่อ hover
-        } else {
-            gl.glColor3f(0.9f, 0.4f, 0.4f); // สีแดงปกติ
+        if (ExitButtonTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            ExitButtonTexture.bind(gl);
+
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(exitButtonX, exitButtonY);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(exitButtonX + exitButtonWidth, exitButtonY);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(exitButtonX + exitButtonWidth, exitButtonY + exitButtonHeight);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(exitButtonX, exitButtonY + exitButtonHeight);
+            gl.glEnd();
+
+            gl.glDisable(GL2.GL_TEXTURE_2D);
         }
-
-        // วาดปุ่มออกจากเกม
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glVertex2f(exitButtonX, exitButtonY);
-        gl.glVertex2f(exitButtonX + exitButtonWidth, exitButtonY);
-        gl.glVertex2f(exitButtonX + exitButtonWidth, exitButtonY + exitButtonHeight);
-        gl.glVertex2f(exitButtonX, exitButtonY + exitButtonHeight);
-        gl.glEnd();
-
-        // วาดข้อความบนปุ่มออกจากเกม
-        textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        String exitText = "ออกจากเกม";
-        Rectangle2D exitTextBounds = textRenderer.getBounds(exitText);
-        int exitTextX = (int) (exitButtonX + (exitButtonWidth - exitTextBounds.getWidth()) / 2);
-        int exitTextY = (int) (exitButtonY + (exitButtonHeight - exitTextBounds.getHeight()) / 2);
-
-        textRenderer.draw(exitText, exitTextX, exitTextY);
-        textRenderer.endRendering();
 
         // ทำให้แน่ใจว่าทุกคำสั่งถูกประมวลผล
         gl.glFlush();
@@ -188,20 +161,38 @@ public class MainPage implements GLEventListener {
                 System.err.println("ไม่พบไฟล์รูปภาพพื้นหลัง: " + backgroundFile.getAbsolutePath());
             }
 
-            // Load the NameGame texture
-            File heartFile = new File("D:\\Computer Graphics\\Project2D\\NameGame.png");
-            if (heartFile.exists()) {
-                heartTexture = TextureIO.newTexture(heartFile, true);
-                System.out.println("Heart texture loaded successfully");
+            // Load the heart texture
+            File nameFile = new File("D:\\Computer Graphics\\Project2D\\NameGame.png");
+            if (nameFile.exists()) {
+                nameGameTexture = TextureIO.newTexture(nameFile, true);
+                System.out.println("nameGameTexture loaded successfully");
 
                 // Enable blending for transparency
                 gl.glEnable(GL2.GL_BLEND);
                 gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
             } else {
-                System.err.println("Heart texture file not found: " + heartFile.getAbsolutePath());
+                System.err.println("Heart texture file not found: " + nameFile.getAbsolutePath());
+            }
+
+         // Load the start button texture
+            File startButtonFile = new File("D:\\Computer Graphics\\Project2D\\Play.png");
+            if (startButtonFile.exists()) {
+                startButtonTexture = TextureIO.newTexture(startButtonFile, true);
+                System.out.println("Start button texture loaded successfully");
+            } else {
+                System.err.println("Start button texture file not found: " + startButtonFile.getAbsolutePath());
+            }
+            
+         // Load the ExitButtonTexture texture
+            File ExitButtonFile = new File("D:\\Computer Graphics\\Project2D\\Exit.png");
+            if (ExitButtonFile.exists()) {
+            	ExitButtonTexture = TextureIO.newTexture(ExitButtonFile, true);
+                System.out.println("ExitButtonTexture loaded successfully");
+            } else {
+                System.err.println("ExitButtonTexture file not found: " + ExitButtonFile.getAbsolutePath());
             }
         } catch (IOException e) {
-            System.err.println("Failed to load heart texture: " + e.getMessage());
+            System.err.println("Failed to load textures: " + e.getMessage());
             e.printStackTrace();
         }
 
