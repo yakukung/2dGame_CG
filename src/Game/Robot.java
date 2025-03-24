@@ -18,6 +18,11 @@ import java.awt.Font;
 import java.awt.geom.Rectangle2D;
 
 public class Robot implements GLEventListener {
+    private Texture mainPageButtonTexture;
+    private Texture pauseButtonTexture;
+    private Texture restartButtonTexture;
+    private Texture levelSelectionButtonTexture;
+
     private float x, y;
     private final float width = 50, height = 50;
     private final float speed = 10.0f;
@@ -140,19 +145,13 @@ public class Robot implements GLEventListener {
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 24));
-        mainPageButtonRect = new Rectangle2D.Float(10, screenHeight - 60, 100, 50); // Define button area
 
         screenWidth = drawable.getSurfaceWidth();
         screenHeight = drawable.getSurfaceHeight();
 
         calculateCenterPosition();
-
-        mainPageButtonRect = new Rectangle2D.Float(screenWidth - 110, screenHeight - 40, 100, 30);
-        pauseButtonRect = new Rectangle2D.Float(screenWidth - 220, screenHeight - 40, 100, 30);
-        restartButtonRect = new Rectangle2D.Float(screenWidth - 330, screenHeight - 40, 100, 30);
-        levelSelectionButtonRect = new Rectangle2D.Float(screenWidth - 440, screenHeight - 40, 100, 30);
-
-        // Load wall texture
+        
+     // Load wall texture
         try {
             File wallFile = new File("D:\\Computer Graphics\\Project2D\\wall.jpg");
             if (wallFile.exists()) {
@@ -166,21 +165,62 @@ public class Robot implements GLEventListener {
             e.printStackTrace();
         }
 
+     // Adjust button positions with increased spacing
+        mainPageButtonRect = new Rectangle2D.Float(screenWidth - 60, screenHeight - 40, 50, 30);
+        pauseButtonRect = new Rectangle2D.Float(screenWidth - 120, screenHeight - 40, 50, 30); // Increased spacing
+        restartButtonRect = new Rectangle2D.Float(screenWidth - 180, screenHeight - 40, 50, 30); // Increased spacing
+        levelSelectionButtonRect = new Rectangle2D.Float(screenWidth - 240, screenHeight - 40, 50, 30); // 
+
         // Load heart texture
         try {
             File heartFile = new File("D:\\Computer Graphics\\Project2D\\heart.png");
             if (heartFile.exists()) {
                 heartTexture = TextureIO.newTexture(heartFile, true);
                 System.out.println("Heart texture loaded successfully");
-
-                // Enable blending for transparency
-                gl.glEnable(GL2.GL_BLEND);
-                gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
             } else {
                 System.err.println("Heart texture file not found: " + heartFile.getAbsolutePath());
             }
         } catch (IOException e) {
             System.err.println("Failed to load heart texture: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Load textures for buttons
+        try {
+            File mainPageButtonFile = new File("D:\\Computer Graphics\\Project2D\\Pause.png");
+            if (mainPageButtonFile.exists()) {
+                mainPageButtonTexture = TextureIO.newTexture(mainPageButtonFile, true);
+                System.out.println("Main Page button texture loaded successfully");
+            } else {
+                System.err.println("Main Page button texture file not found: " + mainPageButtonFile.getAbsolutePath());
+            }
+
+            File pauseButtonFile = new File("D:\\Computer Graphics\\Project2D\\Pause.png");
+            if (pauseButtonFile.exists()) {
+                pauseButtonTexture = TextureIO.newTexture(pauseButtonFile, true);
+                System.out.println("Pause button texture loaded successfully");
+            } else {
+                System.err.println("Pause button texture file not found: " + pauseButtonFile.getAbsolutePath());
+            }
+
+            File restartButtonFile = new File("D:\\Computer Graphics\\Project2D\\Pause.png");
+            if (restartButtonFile.exists()) {
+                restartButtonTexture = TextureIO.newTexture(restartButtonFile, true);
+                System.out.println("Restart button texture loaded successfully");
+            } else {
+                System.err.println("Restart button texture file not found: " + restartButtonFile.getAbsolutePath());
+            }
+
+            File levelSelectionButtonFile = new File("D:\\Computer Graphics\\Project2D\\Pause.png");
+            if (levelSelectionButtonFile.exists()) {
+                levelSelectionButtonTexture = TextureIO.newTexture(levelSelectionButtonFile, true);
+                System.out.println("Level Selection button texture loaded successfully");
+            } else {
+                System.err.println(
+                        "Level Selection button texture file not found: " + levelSelectionButtonFile.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load button textures: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -309,49 +349,79 @@ public class Robot implements GLEventListener {
             }
         }
 
-        // Draw buttons
+        // Begin text rendering
         textRenderer.beginRendering(screenWidth, screenHeight);
-        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        // Draw buttons
-        textRenderer.beginRendering(screenWidth, screenHeight);
-        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // Use the same texture for all buttons
+        if (pauseButtonTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            pauseButtonTexture.bind(gl);
+            gl.glColor3f(1.0f, 1.0f, 1.0f); // Set color to white for texture rendering
 
-        // Draw Main Page button
-        String mainPageText = "Main Page";
-        Rectangle2D mainPageTextBounds = textRenderer.getBounds(mainPageText);
-        int mainPageTextX = (int) (mainPageButtonRect.getX()
-                + (mainPageButtonRect.getWidth() - mainPageTextBounds.getWidth()) / 2);
-        int mainPageTextY = (int) (mainPageButtonRect.getY()
-                + (mainPageButtonRect.getHeight() - mainPageTextBounds.getHeight()) / 2);
-        textRenderer.draw(mainPageText, mainPageTextX, mainPageTextY);
+            // Draw MainPage button
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f((float) mainPageButtonRect.getX(), (float) mainPageButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f((float) (mainPageButtonRect.getX() + mainPageButtonRect.getWidth()),
+                    (float) mainPageButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f((float) (mainPageButtonRect.getX() + mainPageButtonRect.getWidth()),
+                    (float) (mainPageButtonRect.getY() + mainPageButtonRect.getHeight()));
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f((float) mainPageButtonRect.getX(),
+                    (float) (mainPageButtonRect.getY() + mainPageButtonRect.getHeight()));
+            gl.glEnd();
 
-        // Draw Pause button
-        String pauseText = "Pause";
-        Rectangle2D pauseTextBounds = textRenderer.getBounds(pauseText);
-        int pauseTextX = (int) (pauseButtonRect.getX() + (pauseButtonRect.getWidth() - pauseTextBounds.getWidth()) / 2);
-        int pauseTextY = (int) (pauseButtonRect.getY()
-                + (pauseButtonRect.getHeight() - pauseTextBounds.getHeight()) / 2);
-        textRenderer.draw(pauseText, pauseTextX, pauseTextY);
+            // Draw Pause button
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f((float) pauseButtonRect.getX(), (float) pauseButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f((float) (pauseButtonRect.getX() + pauseButtonRect.getWidth()),
+                    (float) pauseButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f((float) (pauseButtonRect.getX() + pauseButtonRect.getWidth()),
+                    (float) (pauseButtonRect.getY() + pauseButtonRect.getHeight()));
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f((float) pauseButtonRect.getX(),
+                    (float) (pauseButtonRect.getY() + pauseButtonRect.getHeight()));
+            gl.glEnd();
 
-        // Draw Restart button
-        String restartText = "Restart";
-        Rectangle2D restartTextBounds = textRenderer.getBounds(restartText);
-        int restartTextX = (int) (restartButtonRect.getX()
-                + (restartButtonRect.getWidth() - restartTextBounds.getWidth()) / 2);
-        int restartTextY = (int) (restartButtonRect.getY()
-                + (restartButtonRect.getHeight() - restartTextBounds.getHeight()) / 2);
-        textRenderer.draw(restartText, restartTextX, restartTextY);
+            // Draw Restart button
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f((float) restartButtonRect.getX(), (float) restartButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f((float) (restartButtonRect.getX() + restartButtonRect.getWidth()),
+                    (float) restartButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f((float) (restartButtonRect.getX() + restartButtonRect.getWidth()),
+                    (float) (restartButtonRect.getY() + restartButtonRect.getHeight()));
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f((float) restartButtonRect.getX(),
+                    (float) (restartButtonRect.getY() + restartButtonRect.getHeight()));
+            gl.glEnd();
 
-        // Draw Level Selection button
-        String levelSelectionText = "Levels";
-        Rectangle2D levelSelectionTextBounds = textRenderer.getBounds(levelSelectionText);
-        int levelSelectionTextX = (int) (levelSelectionButtonRect.getX()
-                + (levelSelectionButtonRect.getWidth() - levelSelectionTextBounds.getWidth()) / 2);
-        int levelSelectionTextY = (int) (levelSelectionButtonRect.getY()
-                + (levelSelectionButtonRect.getHeight() - levelSelectionTextBounds.getHeight()) / 2);
-        textRenderer.draw(levelSelectionText, levelSelectionTextX, levelSelectionTextY);
+            // Draw Level Selection button
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f((float) levelSelectionButtonRect.getX(), (float) levelSelectionButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f((float) (levelSelectionButtonRect.getX() + levelSelectionButtonRect.getWidth()),
+                    (float) levelSelectionButtonRect.getY());
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f((float) (levelSelectionButtonRect.getX() + levelSelectionButtonRect.getWidth()),
+                    (float) (levelSelectionButtonRect.getY() + levelSelectionButtonRect.getHeight()));
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f((float) levelSelectionButtonRect.getX(),
+                    (float) (levelSelectionButtonRect.getY() + levelSelectionButtonRect.getHeight()));
+            gl.glEnd();
 
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+
+        // End text rendering
         textRenderer.endRendering();
     }
 
@@ -416,7 +486,7 @@ public class Robot implements GLEventListener {
         if (heartTexture != null) {
             gl.glEnable(GL2.GL_TEXTURE_2D);
             heartTexture.bind(gl);
-            gl.glColor3f(1.0f, 1.0f, 1.0f);
+            gl.glColor3f(1.0f, 1.0f, 1.0f); // Set color to white for texture rendering
 
             for (int i = 0; i < health; i++) {
                 float heartX = 20 + i * (heartSize + 5);
@@ -476,10 +546,10 @@ public class Robot implements GLEventListener {
         resetPosition();
         item.updatePositions(mazeOffsetX, mazeOffsetY, this.width, this.height, maze); // Pass maze object
 
-        // Recalculate button positions to keep them in the top-right corner
-        mainPageButtonRect.setRect(screenWidth - 110, screenHeight - 40, 100, 30);
-        pauseButtonRect.setRect(screenWidth - 220, screenHeight - 40, 100, 30);
-        restartButtonRect.setRect(screenWidth - 330, screenHeight - 40, 100, 30);
-        levelSelectionButtonRect.setRect(screenWidth - 440, screenHeight - 40, 100, 30);
+     // Recalculate button positions with increased spacing
+        mainPageButtonRect.setRect(screenWidth - 60, screenHeight - 40, 50, 30);
+        pauseButtonRect.setRect(screenWidth - 120, screenHeight - 40, 50, 30); // Increased spacing
+        restartButtonRect.setRect(screenWidth - 180, screenHeight - 40, 50, 30); // Increased spacing
+        levelSelectionButtonRect.setRect(screenWidth - 240, screenHeight - 40, 50, 30); // Increased spacing
     }
 }
