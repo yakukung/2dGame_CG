@@ -150,8 +150,8 @@ public class Robot implements GLEventListener {
         screenHeight = drawable.getSurfaceHeight();
 
         calculateCenterPosition();
-        
-     // Load wall texture
+
+        // Load wall texture
         try {
             File wallFile = new File("D:\\Computer Graphics\\Project2D\\wall.jpg");
             if (wallFile.exists()) {
@@ -165,11 +165,12 @@ public class Robot implements GLEventListener {
             e.printStackTrace();
         }
 
-     // Adjust button positions with increased spacing
+        // Adjust button positions with increased spacing
         mainPageButtonRect = new Rectangle2D.Float(screenWidth - 60, screenHeight - 40, 50, 30);
         pauseButtonRect = new Rectangle2D.Float(screenWidth - 120, screenHeight - 40, 50, 30); // Increased spacing
         restartButtonRect = new Rectangle2D.Float(screenWidth - 180, screenHeight - 40, 50, 30); // Increased spacing
-        levelSelectionButtonRect = new Rectangle2D.Float(screenWidth - 240, screenHeight - 40, 50, 30); // 
+        levelSelectionButtonRect = new Rectangle2D.Float(screenWidth - 240, screenHeight - 40, 50, 30); // Increased
+                                                                                                        // spacing
 
         // Load heart texture
         try {
@@ -187,7 +188,8 @@ public class Robot implements GLEventListener {
 
         // Load textures for buttons
         try {
-            File mainPageButtonFile = new File("D:\\Computer Graphics\\Project2D\\Pause.png");
+            // Update the Main Page button texture path
+            File mainPageButtonFile = new File("D:\\Computer Graphics\\Project2D\\Back.png");
             if (mainPageButtonFile.exists()) {
                 mainPageButtonTexture = TextureIO.newTexture(mainPageButtonFile, true);
                 System.out.println("Main Page button texture loaded successfully");
@@ -211,7 +213,7 @@ public class Robot implements GLEventListener {
                 System.err.println("Restart button texture file not found: " + restartButtonFile.getAbsolutePath());
             }
 
-            File levelSelectionButtonFile = new File("D:\\Computer Graphics\\Project2D\\Pause.png");
+            File levelSelectionButtonFile = new File("D:\\Computer Graphics\\Project2D\\Back.png");
             if (levelSelectionButtonFile.exists()) {
                 levelSelectionButtonTexture = TextureIO.newTexture(levelSelectionButtonFile, true);
                 System.out.println("Level Selection button texture loaded successfully");
@@ -352,13 +354,12 @@ public class Robot implements GLEventListener {
         // Begin text rendering
         textRenderer.beginRendering(screenWidth, screenHeight);
 
-        // Use the same texture for all buttons
-        if (pauseButtonTexture != null) {
+        // Draw MainPage button with its texture
+        if (mainPageButtonTexture != null) {
             gl.glEnable(GL2.GL_TEXTURE_2D);
-            pauseButtonTexture.bind(gl);
-            gl.glColor3f(1.0f, 1.0f, 1.0f); // Set color to white for texture rendering
+            mainPageButtonTexture.bind(gl);
+            gl.glColor3f(1.0f, 1.0f, 1.0f);
 
-            // Draw MainPage button
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f);
             gl.glVertex2f((float) mainPageButtonRect.getX(), (float) mainPageButtonRect.getY());
@@ -373,7 +374,15 @@ public class Robot implements GLEventListener {
                     (float) (mainPageButtonRect.getY() + mainPageButtonRect.getHeight()));
             gl.glEnd();
 
-            // Draw Pause button
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+
+        // Draw Pause button with its texture
+        if (pauseButtonTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            pauseButtonTexture.bind(gl);
+            gl.glColor3f(1.0f, 1.0f, 1.0f);
+
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f);
             gl.glVertex2f((float) pauseButtonRect.getX(), (float) pauseButtonRect.getY());
@@ -388,7 +397,15 @@ public class Robot implements GLEventListener {
                     (float) (pauseButtonRect.getY() + pauseButtonRect.getHeight()));
             gl.glEnd();
 
-            // Draw Restart button
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+
+        // Draw Restart button with its texture
+        if (restartButtonTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            restartButtonTexture.bind(gl);
+            gl.glColor3f(1.0f, 1.0f, 1.0f);
+
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f);
             gl.glVertex2f((float) restartButtonRect.getX(), (float) restartButtonRect.getY());
@@ -403,7 +420,15 @@ public class Robot implements GLEventListener {
                     (float) (restartButtonRect.getY() + restartButtonRect.getHeight()));
             gl.glEnd();
 
-            // Draw Level Selection button
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+
+        // Draw Level Selection button with its texture
+        if (levelSelectionButtonTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            levelSelectionButtonTexture.bind(gl);
+            gl.glColor3f(1.0f, 1.0f, 1.0f);
+
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f);
             gl.glVertex2f((float) levelSelectionButtonRect.getX(), (float) levelSelectionButtonRect.getY());
@@ -546,7 +571,7 @@ public class Robot implements GLEventListener {
         resetPosition();
         item.updatePositions(mazeOffsetX, mazeOffsetY, this.width, this.height, maze); // Pass maze object
 
-     // Recalculate button positions with increased spacing
+        // Recalculate button positions with increased spacing
         mainPageButtonRect.setRect(screenWidth - 60, screenHeight - 40, 50, 30);
         pauseButtonRect.setRect(screenWidth - 120, screenHeight - 40, 50, 30); // Increased spacing
         restartButtonRect.setRect(screenWidth - 180, screenHeight - 40, 50, 30); // Increased spacing
