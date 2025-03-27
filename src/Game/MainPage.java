@@ -2,17 +2,19 @@ package Game;
 
 import com.jogamp.newt.event.MouseAdapter;
 import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.MouseListener; // Add this import
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 import java.awt.Font;
 import java.awt.geom.Rectangle2D;
+import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
-import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureIO;
 
 public class MainPage implements GLEventListener {
 
@@ -27,6 +29,10 @@ public class MainPage implements GLEventListener {
     private Texture startButtonTexture;
     private Texture ExitButtonTexture;
     private Texture nameGameTexture;
+
+    // เปิดให้ใช้ได้ทุกคลาส
+    public static final String filePath = "/Users/yakukung/2DGame/";
+    private Clip backgroundMusic;
 
     @Override
     public void display(GLAutoDrawable drawable) {
@@ -154,39 +160,34 @@ public class MainPage implements GLEventListener {
         System.out.println("MainPage initialized"); // Debugging statement
 
         try {
-            File backgroundFile = new File("D:\\Computer Graphics\\Project2D\\BG.jpg");
+            File backgroundFile = new File(filePath + "BG.jpg");
             if (backgroundFile.exists()) {
                 backgroundTexture = TextureIO.newTexture(backgroundFile, true);
             } else {
                 System.err.println("ไม่พบไฟล์รูปภาพพื้นหลัง: " + backgroundFile.getAbsolutePath());
             }
 
-            // Load the heart texture
-            File nameFile = new File("D:\\Computer Graphics\\Project2D\\NameGame.png");
+            File nameFile = new File(filePath + "NameGame.png");
             if (nameFile.exists()) {
                 nameGameTexture = TextureIO.newTexture(nameFile, true);
                 System.out.println("nameGameTexture loaded successfully");
-
-                // Enable blending for transparency
                 gl.glEnable(GL2.GL_BLEND);
                 gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
             } else {
                 System.err.println("Heart texture file not found: " + nameFile.getAbsolutePath());
             }
 
-         // Load the start button texture
-            File startButtonFile = new File("D:\\Computer Graphics\\Project2D\\Play.png");
+            File startButtonFile = new File(filePath + "Play.png");
             if (startButtonFile.exists()) {
                 startButtonTexture = TextureIO.newTexture(startButtonFile, true);
                 System.out.println("Start button texture loaded successfully");
             } else {
                 System.err.println("Start button texture file not found: " + startButtonFile.getAbsolutePath());
             }
-            
-         // Load the ExitButtonTexture texture
-            File ExitButtonFile = new File("D:\\Computer Graphics\\Project2D\\Exit.png");
+
+            File ExitButtonFile = new File(filePath + "Exit.png");
             if (ExitButtonFile.exists()) {
-            	ExitButtonTexture = TextureIO.newTexture(ExitButtonFile, true);
+                ExitButtonTexture = TextureIO.newTexture(ExitButtonFile, true);
                 System.out.println("ExitButtonTexture loaded successfully");
             } else {
                 System.err.println("ExitButtonTexture file not found: " + ExitButtonFile.getAbsolutePath());
@@ -196,6 +197,15 @@ public class MainPage implements GLEventListener {
             e.printStackTrace();
         }
 
+        // Safely remove existing mouse listeners if any exist
+        MouseListener[] existingListeners = Randers.getWindow().getMouseListeners();
+        if (existingListeners.length > 0) {
+            for (MouseListener listener : existingListeners) {
+                Randers.getWindow().removeMouseListener(listener);
+            }
+        }
+
+        // Add fresh mouse listener
         Randers.getWindow().addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -214,10 +224,23 @@ public class MainPage implements GLEventListener {
                 }
             }
         });
+
+        // Load and play background music
+        try {
+            File musicFile = new File(filePath + "bg_sound.wav");
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(musicFile);
+            backgroundMusic = AudioSystem.getClip();
+            backgroundMusic.open(audioInputStream);
+            backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+            backgroundMusic.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            System.err.println("Error loading background music: " + e.getMessage());
+        }
     }
 
     private void goToLevelSelection() {
-        Randers.setGLEventListener(new LevelSelection());
+        backgroundMusic.stop();
+        Randers.setGLEventListener(new LevelSelection(this));
     }
 
     @Override
@@ -229,5 +252,11 @@ public class MainPage implements GLEventListener {
         gl.glOrtho(0, width, 0, height, -1, 1);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+    }
+
+    public void stopBackgroundMusic() {
+        if (backgroundMusic != null && backgroundMusic.isRunning()) {
+            backgroundMusic.stop();
+        }
     }
 }

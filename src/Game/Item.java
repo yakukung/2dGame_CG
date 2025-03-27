@@ -1,118 +1,128 @@
-// Item
 package Game;
 
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 public class Item {
-    private float x, y; // ตำแหน่งของไอเทม
-    private final float size = 20; // ขนาดของไอเทม
-    private boolean collected = false; // สถานะการเก็บไอเทม
-    private Random random = new Random(); // Random number generator
-    private int collectedCount = 0; // Counter for item collection
-    private final int maxDrops = 2; // จำนวนการดรอปของไอเทม
+    private float x, y;
+    private final float size = 20;
+    private boolean collected = false;
+    private Random random = new Random();
+    private int level;
+    private int itemIndex;
+    private Texture itemTexture;
 
-    public Item() {
-        // Constructor
+    private static final int[][][] LEVEL_ITEM_POSITIONS = {
+        {{5, 2}}, // Level 1 - 1 item
+        {{3, 5}, {5, 3}}, // Level 2 - 2 items
+        {{7, 7}, {3, 5}, {5, 2}} // Level 3 - 3 items
+    };
+
+    public Item(int level, int itemIndex) {
+        this.level = level;
+        this.itemIndex = itemIndex;
+        loadItemTexture();
+    }
+
+    private void loadItemTexture() {
+        try {
+            String texturePath;
+
+            // ไปแก้ Path อยู่ที่ MainPage ทำไว้แบบใช้ทุกคลาสแล้ว
+            String imagePath = MainPage.filePath;
+            switch (level) {
+                case 1: texturePath = imagePath + "level1.png"; break;
+                case 2: texturePath = imagePath + "level2.png"; break;
+                case 3: texturePath = imagePath + "level3.png"; break;
+                default: texturePath = imagePath + "level1.png"; break;
+            }
+            File textureFile = new File(texturePath);
+            if (textureFile.exists()) {
+                itemTexture = TextureIO.newTexture(textureFile, true);
+            } else {
+                System.err.println("Item texture file not found: " + texturePath);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load item texture: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void init(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
         respawnItem(mazeOffsetX, mazeOffsetY, cellWidth, cellHeight, maze);
     }
 
-    public void reset(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
-        collected = false;
-        collectedCount = 0;
-        respawnItem(mazeOffsetX, mazeOffsetY, cellWidth, cellHeight, maze);
-    }
-
-    public void updatePosition(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
-        if (collected) {
-            respawnItem(mazeOffsetX, mazeOffsetY, cellWidth, cellHeight, maze);
-        }
-    }
-
     public void checkCollision(float playerX, float playerY, float playerWidth, float playerHeight) {
         if (!collected) {
-            // ตรวจสอบการชนกันระหว่างผู้เล่นและไอเทม
             boolean collisionX = playerX + playerWidth >= x && x + size >= playerX;
             boolean collisionY = playerY + playerHeight >= y && y + size >= playerY;
 
             if (collisionX && collisionY) {
                 collected = true;
-                collectedCount++;
-                System.out.println("เก็บไอเทมได้! จำนวนที่เก็บได้: " + collectedCount);
+                System.out.println("Item " + itemIndex + " collected in level " + level);
             }
         }
     }
 
-    private void respawnItem(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
-        if (collectedCount >= maxDrops) {
-            collected = true; // Do not show item if max drops reached
-            return;
-        }
-
-        int newItemX, newItemY;
-
-        // Determine item position based on maze level
-        if (maze instanceof MazeLV_1) {
-            newItemX = 5; // X-coordinate for MazeLV_1
-            newItemY = 2; // Y-coordinate for MazeLV_1
-        } else if (maze instanceof MazeLV_2) {
-        	 newItemX = 3; // X-coordinate for MazeLV_2
-             newItemY = 5; // Y-coordinate for MazeLV_2
-        } else if (maze instanceof MazeLV_3) {
-        	newItemX = 7; // X-coordinate for MazeLV_3
-            newItemY = 7; // Y-coordinate for MazeLV_3
-        } else {
-            newItemX = 5; // Default X-coordinate
-            newItemY = 2; // Default Y-coordinate
-        }
-
-        // Convert maze position to screen coordinates
-        x = mazeOffsetX + newItemX * cellWidth + (cellWidth - size) / 2;
-        y = mazeOffsetY + newItemY * cellHeight + (cellHeight - size) / 2;
-        collected = false;
-    }
-
-    public void updatePositions(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
-        if (!collected) {
-            int newItemX, newItemY;
-
-            // Determine item position based on maze level
-            if (maze instanceof MazeLV_1) {
-                newItemX = 5; // X-coordinate for MazeLV_1
-                newItemY = 2; // Y-coordinate for MazeLV_1
-            } else if (maze instanceof MazeLV_2) {
-                newItemX = 3; // X-coordinate for MazeLV_2
-                newItemY = 5; // Y-coordinate for MazeLV_2
-            } else if (maze instanceof MazeLV_3) {
-                newItemX = 7; // X-coordinate for MazeLV_3
-                newItemY = 7; // Y-coordinate for MazeLV_3
-            } else {
-                newItemX = 5; // Default X-coordinate
-                newItemY = 2; // Default Y-coordinate
-            }
-
-            // Update to fixed screen coordinates
-            x = mazeOffsetX + newItemX * cellWidth + (cellWidth - size) / 2;
-            y = mazeOffsetY + newItemY * cellHeight + (cellHeight - size) / 2;
+    public void respawnItem(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
+        if (level <= LEVEL_ITEM_POSITIONS.length && itemIndex < LEVEL_ITEM_POSITIONS[level-1].length) {
+            int[] pos = LEVEL_ITEM_POSITIONS[level-1][itemIndex];
+            x = mazeOffsetX + pos[0] * cellWidth + (cellWidth - size) / 2;
+            y = mazeOffsetY + pos[1] * cellHeight + (cellHeight - size) / 2;
+            collected = false;
         }
     }
 
     public void draw(GL2 gl) {
-        if (!collected) {
-            gl.glColor3f(1.0f, 0.5f, 0.0f); // สีของไอเทม (สีส้ม)
+        if (!collected && itemTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            itemTexture.bind(gl);
             gl.glBegin(GL2.GL_QUADS);
-            gl.glVertex2f(x, y);
-            gl.glVertex2f(x + size, y);
-            gl.glVertex2f(x + size, y + size);
-            gl.glVertex2f(x, y + size);
+            gl.glTexCoord2f(0.0f, 0.0f); gl.glVertex2f(x, y);
+            gl.glTexCoord2f(1.0f, 0.0f); gl.glVertex2f(x + size, y);
+            gl.glTexCoord2f(1.0f, 1.0f); gl.glVertex2f(x + size, y + size);
+            gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f(x, y + size);
             gl.glEnd();
+            gl.glDisable(GL2.GL_TEXTURE_2D);
         }
     }
 
     public boolean isCollected() {
         return collected;
+    }
+
+    public void updateForNewLevel(int newLevel, float mazeOffsetX, float mazeOffsetY, 
+            float cellWidth, float cellHeight, Maze maze) {
+        this.level = newLevel;
+        loadItemTexture(); // โหลด Texture ใหม่เมื่อเปลี่ยนเลเวล
+        init(mazeOffsetX, mazeOffsetY, cellWidth, cellHeight, maze);
+    }
+
+    public void updatePositions(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
+        if (!collected) {
+            int[] pos = LEVEL_ITEM_POSITIONS[level-1][itemIndex];
+            x = mazeOffsetX + pos[0] * cellWidth + (cellWidth - size) / 2;
+            y = mazeOffsetY + pos[1] * cellHeight + (cellHeight - size) / 2;
+        }
+    }
+
+    public int getRemainingItems() {
+        return collected ? 0 : 1;
+    }
+
+    public void reset(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
+        collected = false;
+        respawnItem(mazeOffsetX, mazeOffsetY, cellWidth, cellHeight, maze);
+    }
+
+    public static int getItemCountForLevel(int level) {
+        if (level > 0 && level <= LEVEL_ITEM_POSITIONS.length) {
+            return LEVEL_ITEM_POSITIONS[level-1].length;
+        }
+        return 0;
     }
 }
