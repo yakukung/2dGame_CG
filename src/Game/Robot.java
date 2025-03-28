@@ -332,7 +332,7 @@ public class Robot implements GLEventListener {
             System.err.println("Error loading damage sound: " + e.getMessage());
         }
         try {
-            File loseSoundFile = new File(imagePath + "dead_ef.wav");
+            File loseSoundFile = new File(imagePath + "gameOver.wav");
             AudioInputStream loseAudioInputStream = AudioSystem.getAudioInputStream(loseSoundFile);
             loseSound = AudioSystem.getClip();
             loseSound.open(loseAudioInputStream);
