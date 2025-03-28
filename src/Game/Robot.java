@@ -32,7 +32,7 @@ public class Robot implements GLEventListener {
 
     private float x, y;
     private final float width = 50, height = 50;
-    private final float speed = 10.0f;
+    private final float speed = 50.0f;
 
     private int screenWidth, screenHeight;
     private int health = 3;

@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class Item {
     private float x, y;
-    private final float size = 20;
+    private final float size = 30; // เพิ่มขนาดจาก 20 เป็น 30
     private boolean collected = false;
     private Random random = new Random();
     private int level;
@@ -35,10 +35,10 @@ public class Item {
             // ไปแก้ Path อยู่ที่ MainPage ทำไว้แบบใช้ทุกคลาสแล้ว
             String imagePath = MainPage.filePath;
             switch (level) {
-                case 1: texturePath = imagePath + "level1.png"; break;
-                case 2: texturePath = imagePath + "level2.png"; break;
-                case 3: texturePath = imagePath + "level3.png"; break;
-                default: texturePath = imagePath + "level1.png"; break;
+                case 1: texturePath = imagePath + "coin.png"; break;
+                case 2: texturePath = imagePath + "coin.png"; break;
+                case 3: texturePath = imagePath + "coin.png"; break;
+                default: texturePath = imagePath + "coin.png"; break;
             }
             File textureFile = new File(texturePath);
             if (textureFile.exists()) {
@@ -79,6 +79,10 @@ public class Item {
 
     public void draw(GL2 gl) {
         if (!collected && itemTexture != null) {
+            // เพิ่มการรองรับความโปร่งใส
+            gl.glEnable(GL2.GL_BLEND);
+            gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+            
             gl.glEnable(GL2.GL_TEXTURE_2D);
             itemTexture.bind(gl);
             gl.glBegin(GL2.GL_QUADS);
@@ -88,6 +92,7 @@ public class Item {
             gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f(x, y + size);
             gl.glEnd();
             gl.glDisable(GL2.GL_TEXTURE_2D);
+            gl.glDisable(GL2.GL_BLEND); // ปิดการใช้งาน blend mode
         }
     }
 
