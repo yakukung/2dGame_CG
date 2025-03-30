@@ -44,8 +44,13 @@ public class Robot implements GLEventListener {
     private Texture heartTexture;
     private Texture robotTexture;
     private Texture wallTexture;
+    private Texture finishTexture;
     private Texture nextButtonTexture;
     private final int heartSize = 30;
+    private Texture winScreenTexture;
+    private Texture lostScreenTexture;
+
+    private Texture coinTexture;
 
     private float mazeOffsetX;
     private float mazeOffsetY;
@@ -62,7 +67,16 @@ public class Robot implements GLEventListener {
     private Rectangle2D nextButtonRect;
     private Texture backgroundTexture;
 
-    // ไปแก้ Path อยู่ที่ MainPage ทำไว้แบบใช้ทุกคลาสแล้ว
+    private Texture[] robotFrames; // Array สำหรับเก็บแต่ละเฟรม
+    private int currentFrame = 0; // ตัวแปรเก็บเฟรมปัจจุบัน
+    private float animationSpeed = 0.75f; // ความเร็วในการเปลี่ยนเฟรม
+    private long lastTime = System.nanoTime();
+
+    private float timeElapsed = 0.0f; // ตัวแปรเก็บเวลาในการเปลี่ยนเฟรม
+    private Texture[] wallFrames; // Array สำหรับเก็บ wall textures
+    private int currentWallFrame = 0; // ตัวแปรเพื่อเก็บเฟรมที่กำลังใช้งานของ wall
+
+    // ไปแก้ Path อี่ยู่ที่ MainPage ทำไว้แบบใช้ทุกคลาสแล้ว
     String imagePath = MainPage.filePath;
     private Clip gameMusic;
     private MainPage mainPage;
@@ -76,18 +90,37 @@ public class Robot implements GLEventListener {
         this.gameUI = new GameUI();
     }
 
-    private void loadRobotTexture() {
+    private void loadRobotTextures() {
         try {
-            File robotFile = new File(imagePath + "Human.jpg");
-            if (robotFile.exists()) {
-                robotTexture = TextureIO.newTexture(robotFile, true);
-                System.out.println("Robot texture loaded successfully");
-            } else {
-                System.err.println("Robot texture file not found: " + robotFile.getAbsolutePath());
+            robotFrames = new Texture[5]; // สมมุติว่าเรามี 3 เฟรม
+            for (int i = 0; i < robotFrames.length; i++) {
+                // สร้าง path สำหรับแต่ละเฟรม เช่น "testframe1.png", "testframe2.png",
+                // "testframe3.png"
+                File robotFile = new File(imagePath + "slimeFrame" + (i + 1) + ".png");
+
+                // พิมพ์ path ของไฟล์ที่กำลังจะโหลด
+                System.out.println("Attempting to load texture from: " + robotFile.getAbsolutePath());
+
+                // ตรวจสอบว่าไฟล์มีอยู่จริงหรือไม่
+                if (robotFile.exists()) {
+                    robotFrames[i] = TextureIO.newTexture(robotFile, true);
+                    System.out.println("Robot texture frame " + (i + 1) + " loaded successfully");
+                } else {
+                    System.err.println("Robot texture file not found: " + robotFile.getAbsolutePath());
+                }
             }
         } catch (IOException e) {
-            System.err.println("Failed to load robot texture: " + e.getMessage());
+            System.err.println("Failed to load robot textures: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private void updateFrame(float deltaTime) {
+        timeElapsed += deltaTime;
+        if (timeElapsed >= animationSpeed) {
+            currentFrame = (currentFrame + 1) % robotFrames.length;
+            currentWallFrame = (currentWallFrame + 1) % wallFrames.length; // เปลี่ยนเฟรม wall
+            timeElapsed = 0.0f; // รีเซ็ตเวลา
         }
     }
 
@@ -115,13 +148,11 @@ public class Robot implements GLEventListener {
                     System.out.println("🎉 Game Win! 🎉");
                     gameOver = true;
                     hasWon = true;
-                    
-                    // ตรวจสอบก่อนหยุดเสียงเพื่อป้องกันการเรียกซ้ำ
-                    if (gameMusic != null && gameMusic.isRunning()) {
-                        gameMusic.stop();
-                    }
-                    
-                    if (winSound != null) {
+
+                    // Stop all sounds before playing the win sound
+                    stopAllSounds();
+
+                    if (winSound != null && !winSound.isRunning()) {
                         winSound.setFramePosition(0);
                         winSound.start();
                     }
@@ -130,17 +161,14 @@ public class Robot implements GLEventListener {
                         nextButtonRect.setRect((screenWidth - 100) / 2, screenHeight / 2 + -100, 100, 50);
                     }
                 } else {
-                    // ตรวจสอบก่อนหยุดเสียงเพื่อป้องกันการเรียกซ้ำ
-                    if (gameMusic != null && gameMusic.isRunning()) {
-                        gameMusic.stop();
-                    }
-                    
-                    // ตรวจสอบว่าเสียง lose ไม่ได้เล่นอยู่แล้วก่อนเล่นใหม่
+                    // Stop all sounds before playing the lose sound
+                    stopAllSounds();
+
                     if (loseSound != null && !loseSound.isRunning()) {
                         loseSound.setFramePosition(0);
                         loseSound.start();
                     }
-                    
+
                     System.out.println("🚫 Need to collect " + getRemainingItemsCount() + " more items!");
                     gameOver = true;
                     hasWon = false;
@@ -156,14 +184,71 @@ public class Robot implements GLEventListener {
         }
     }
 
+    private void stopAllSounds() {
+        // หยุดเสียงพื้นหลัง
+        if (gameMusic != null) {
+            try {
+                if (gameMusic.isRunning()) {
+                    gameMusic.stop();
+                }
+            } catch (Exception e) {
+                System.err.println("Error stopping game music: " + e.getMessage());
+            }
+        }
+
+        // หยุดเสียงชนะ
+        if (winSound != null) {
+            try {
+                if (winSound.isRunning()) {
+                    winSound.stop();
+                }
+            } catch (Exception e) {
+                System.err.println("Error stopping win sound: " + e.getMessage());
+            }
+        }
+
+        // หยุดเสียงแพ้
+        if (loseSound != null) {
+            try {
+                if (loseSound.isRunning()) {
+                    loseSound.stop();
+                }
+            } catch (Exception e) {
+                System.err.println("Error stopping lose sound: " + e.getMessage());
+            }
+        }
+
+        // หยุดเสียงเก็บไอเทม
+        if (itemCollectSound != null) {
+            try {
+                if (itemCollectSound.isRunning()) {
+                    itemCollectSound.stop();
+                }
+            } catch (Exception e) {
+                System.err.println("Error stopping item collect sound: " + e.getMessage());
+            }
+        }
+
+        // หยุดเสียงเมื่อได้รับความเสียหาย
+        if (damageSound != null) {
+            try {
+                if (damageSound.isRunning()) {
+                    damageSound.stop();
+                }
+            } catch (Exception e) {
+                System.err.println("Error stopping damage sound: " + e.getMessage());
+            }
+        }
+    }
+
     private Clip itemCollectSound;
     private Clip damageSound; // New variable for damage sound
-    
+
     private void checkItemCollisions() {
         for (Item item : items) {
             boolean wasCollected = item.isCollected();
             item.checkCollision(x, y, width, height);
-            
+
             // Play sound if item was just collected
             if (!wasCollected && item.isCollected()) {
                 if (itemCollectSound != null) {
@@ -173,7 +258,7 @@ public class Robot implements GLEventListener {
             }
         }
     }
-    
+
     private boolean areAllItemsCollected() {
         for (Item item : items) {
             if (!item.isCollected()) {
@@ -194,32 +279,33 @@ public class Robot implements GLEventListener {
     }
 
     private void takeDamage() {
-        health--;
-        System.out.println("หุ่นยนต์ชนผนัง! ชีวิตที่เหลือ: " + health);
+        if (health > 1) {
+            health--;
+            System.out.println("หุ่นยนต์ชนผนัง! ชีวิตที่เหลืออยู่: " + health);
 
-        // Play damage sound when health is reduced
-        if (damageSound != null) {
-            damageSound.setFramePosition(0);
-            damageSound.start();
-        }
+            // Play damage sound when health is reduced
+            if (damageSound != null) {
+                damageSound.setFramePosition(0);
+                damageSound.start();
+            }
 
-        if (health <= 0) {
+            resetPosition();
+        } else {
+            health--;
             gameOver = true;
             hasWon = false;
             System.out.println("Game Over!");
-            
-            // ตรวจสอบก่อนหยุดเสียงเพื่อป้องกันการเรียกซ้ำ
+
+            // ตรวจสอบก่อนหยุุดเสียงเพื่อป้องกันการเรียกซ้ำ
             if (gameMusic != null && gameMusic.isRunning()) {
                 gameMusic.stop();
             }
-            
+
             // ตรวจสอบว่าเสียง lose ไม่ได้เล่นอยู่แล้วก่อนเล่นใหม่
             if (loseSound != null && !loseSound.isRunning()) {
                 loseSound.setFramePosition(0);
                 loseSound.start();
             }
-        } else {
-            resetPosition();
         }
     }
 
@@ -229,6 +315,10 @@ public class Robot implements GLEventListener {
     }
 
     private void restartGame() {
+        // Stop any currently playing sounds
+        stopAllSounds();
+
+        // Reset game state
         health = 3;
         gameOver = false;
         hasWon = false;
@@ -236,15 +326,45 @@ public class Robot implements GLEventListener {
         for (Item item : items) {
             item.reset(mazeOffsetX, mazeOffsetY, width, height, maze);
         }
-        
-        // ตรวจสอบสถานะเสียงก่อนเริ่มใหม่
-        if (gameMusic != null && !gameMusic.isRunning()) {
-            gameMusic.setFramePosition(0);
-            gameMusic.loop(Clip.LOOP_CONTINUOUSLY);
-            gameMusic.start();
+
+        // Restart game music - ตรวจสอบก่อนเล่นเสียงใหม่
+        if (gameMusic != null) {
+            // ตรวจสอบว่าเสียงกำลังเล่นอยู่หรือไม่
+            if (!gameMusic.isRunning()) {
+                gameMusic.setFramePosition(0);
+                gameMusic.loop(Clip.LOOP_CONTINUOUSLY);
+                gameMusic.start();
+            }
         }
-        
+
         System.out.println("เริ่มเกมใหม่!");
+    }
+
+    private void loadWallTextures() {
+        try {
+            wallFrames = new Texture[3];
+            for (int i = 0; i < wallFrames.length; i++) {
+                File wallFile = new File(imagePath + "walltextureframe" + (i + 1) + ".png");
+                if (wallFile.exists()) {
+                    wallFrames[i] = TextureIO.newTexture(wallFile, true);
+                    System.out.println("Wall texture frame " + (i + 1) + " loaded successfully");
+                } else {
+                    System.err.println("Wall texture file not found: " + wallFile.getAbsolutePath());
+                }
+            }
+
+            // Load the Finish texture
+            File finishFile = new File(imagePath + "Finish.jpg");
+            if (finishFile.exists()) {
+                finishTexture = TextureIO.newTexture(finishFile, true);
+                System.out.println("Finish texture loaded successfully");
+            } else {
+                System.err.println("Finish texture file not found: " + finishFile.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load textures: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -259,13 +379,17 @@ public class Robot implements GLEventListener {
 
         // Load textures
         try {
-            // Wall texture
-            File wallFile = new File(imagePath +"wall.jpg");
-            if (wallFile.exists()) {
-                wallTexture = TextureIO.newTexture(wallFile, true);
+            File winScreenFile = new File(imagePath + "victoryframe1.png");
+            if (winScreenFile.exists()) {
+                winScreenTexture = TextureIO.newTexture(winScreenFile, true);
             }
 
-            File heartFile = new File(imagePath +"heart.png");
+            File lostScreenFile = new File(imagePath + "lost3.png");
+            if (lostScreenFile.exists()) {
+                lostScreenTexture = TextureIO.newTexture(lostScreenFile, true);
+            }
+
+            File heartFile = new File(imagePath + "heart.png");
             if (heartFile.exists()) {
                 heartTexture = TextureIO.newTexture(heartFile, true);
                 heartTexture.setTexParameteri(gl, GL2.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
@@ -347,7 +471,8 @@ public class Robot implements GLEventListener {
         levelSelectionButtonRect = new Rectangle2D.Float(screenWidth - 240, screenHeight - 40, 50, 30);
         nextButtonRect = new Rectangle2D.Float(-100, -100, 100, 50); // Initially off-screen
 
-        loadRobotTexture();
+        loadRobotTextures();
+        loadWallTextures();
         resetPosition();
         gameUI.init(screenWidth, screenHeight);
         initializeItems(); // Replaces item.init()
@@ -370,8 +495,17 @@ public class Robot implements GLEventListener {
     }
 
     private void handleKeyPress(KeyEvent e) {
+        // ป้องกันการรีสตาร์ทเกมเมื่อชนะด่านสุดท้าย
         if (gameOver && e.getKeyCode() == KeyEvent.VK_R) {
-            // ตรวจสอบสถานะเสียงก่อนเริ่มใหม่
+            // ถ้าชนะด่านสุดท้ายแล้ว ไม่อนุญาตให้รีสตาร์ทเกม
+            if (hasWon && level == 3) {
+                return; // ไม่ทำอะไรเมื่อกด R ในกรณีชนะด่านสุดท้าย
+            }
+
+            // Stop all sounds before restarting the game
+            stopAllSounds();
+
+            // Restart game music
             if (gameMusic != null && !gameMusic.isRunning()) {
                 gameMusic.setFramePosition(0);
                 gameMusic.loop(Clip.LOOP_CONTINUOUSLY);
@@ -407,9 +541,9 @@ public class Robot implements GLEventListener {
         float mouseX = e.getX();
         float mouseY = screenHeight - e.getY();
 
-        // กรีที่เกมจบและชนะ
+        // กรณีที่เกมจบและชนะ
         if (gameOver && hasWon) {
-            // ตรวจสอบเฉพาะปุ่ม Next
+            // ตรวจสอบเฉพาะปุ่ม Next หรือปุ่ม HomePage (สำหรับด่านสุดท้าย)
             if (level < 3 && nextButtonRect.contains(mouseX, mouseY)) {
                 Maze nextMaze = null;
                 switch (level) {
@@ -422,17 +556,26 @@ public class Robot implements GLEventListener {
                 }
 
                 if (nextMaze != null) {
+                    // Stop all sounds before transitioning to the next level
+                    stopAllSounds();
+
                     Robot nextLevelRobot = new Robot(nextMaze, level + 1);
                     Randers.setGLEventListener(nextLevelRobot);
                 }
                 return;
+            } else if (level == 3 && nextButtonRect.contains(mouseX, mouseY)) {
+                // เมื่อชนะด่านสุดท้ายและกดปุ่ม HomePage
+                stopAllSounds();
+                goToMainPage();
+                return;
             }
-            // ถ้าคลิกนอกเหนือจากปุ่ม Next ให้ไม่ทำอะไร
+            // ถ้าคลิกนอกเหนือจากปุ่ม Next หรือ HomePage ให้ไม่ทำอะไร
             return;
         }
 
         // ตรวจสอบปุ่มอื่นๆ เฉพาะเมื่อไม่ได้อยู่สถานะเกมจบ
-        if (!gameOver) {
+        // หรือถ้าเกมจบแต่ไม่ชนะที่ด่านสุดท้าย
+        if (!gameOver || (gameOver && !hasWon)) {
             if (mainPageButtonRect.contains(mouseX, mouseY)) {
                 goToMainPage();
             } else if (pauseButtonRect.contains(mouseX, mouseY)) {
@@ -447,7 +590,7 @@ public class Robot implements GLEventListener {
     }
 
     private void goToMainPage() {
-        // ตรวจสอบก่อนหยุดเสียงเพื่อป้องกันการเรียกซ้ำ
+        // ตรวจสอบก่อนหยุุดเสียงเพื่อป้องกันการเรียกซ้ำ
         if (gameMusic != null && gameMusic.isRunning()) {
             gameMusic.stop();
         }
@@ -455,7 +598,7 @@ public class Robot implements GLEventListener {
     }
 
     private void goToLevelSelection() {
-        // ตรวจสอบก่อนหยุดเสียงเพื่อป้องกันการเรียกซ้ำ
+        // ตรวจสอบก่อนหยุุดเสียงเพื่อป้องกันการเรียกซ้ำ
         if (gameMusic != null && gameMusic.isRunning()) {
             gameMusic.stop();
         }
@@ -466,6 +609,11 @@ public class Robot implements GLEventListener {
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+        long currentTime = System.nanoTime();
+        float deltaTime = (currentTime - lastTime) / 1000000000.0f; // แปลงจาก nanoseconds เป็น seconds
+        lastTime = currentTime;
+
+        drawRobot(gl, deltaTime); // ส่ง deltaTime ไปยัง drawRobot
 
         // Draw the background first
         if (backgroundTexture != null) {
@@ -492,23 +640,28 @@ public class Robot implements GLEventListener {
         }
 
         if (!gameOver) {
-            drawItemCounter();
+            drawItemCounter(gl);
             drawItems(gl);
-            drawRobot(gl);
+            drawRobot(gl, deltaTime);
             drawHealth(gl);
+            loadCoinTexture();
         } else {
+            // ในเมธอด display ส่วนที่แสดงปุ่ม Next
             if (hasWon) {
-                gameUI.drawWinScreen(textRenderer, screenWidth, screenHeight);
+                drawWinScreen(gl, screenWidth, screenHeight);
 
-                // วาดปุ่ม Next เฉพาะเมื่อชนะและไม่ใช่ด่านสุดท้าย
-                if (level < 3 && nextButtonTexture != null) {
-                    // วางปุ่ม Next ให้ห่างจากปุ่มอื่นๆ
+                // วาดปุ่ม Next เฉพาะเมื่อชนะและไม่ใช่ด่านสุดท้าย หรือวาดปุ่ม HomePage
+                // เมื่อชนะด่านสุดท้าย
+                if (nextButtonTexture != null) {
+                    // วางปุ่ม Next หรือ HomePage ให้ห่างจากปุ่มอื่นๆ
                     nextButtonRect.setRect(
                             screenWidth / 2 - 50, // จัดกึ่งกลางหน้าจอ
-                            screenHeight / 2 - 100, // ลงมาด้านล่าง
-                            100, 50);
+                            screenHeight / 2 - 275, 100, 50); // ลงมาด้านล่าง
 
-                    nextButtonTexture.bind(gl);
+                    // เลือกใช้ texture ตามด่าน
+                    Texture buttonTexture = (level < 3) ? nextButtonTexture : mainPageButtonTexture;
+
+                    buttonTexture.bind(gl);
                     gl.glEnable(GL2.GL_TEXTURE_2D);
                     gl.glBegin(GL2.GL_QUADS);
                     gl.glTexCoord2f(0, 0);
@@ -526,7 +679,7 @@ public class Robot implements GLEventListener {
                     gl.glDisable(GL2.GL_TEXTURE_2D);
                 }
             } else {
-                gameUI.drawGameOverScreen(textRenderer, screenWidth, screenHeight);
+                drawGameOverScreen(gl, screenWidth, screenHeight);
             }
         }
 
@@ -542,10 +695,27 @@ public class Robot implements GLEventListener {
         }
     }
 
-    private void drawRobot(GL2 gl) {
-        if (robotTexture != null) {
+    private void loadCoinTexture() {
+        try {
+            String imagePath = MainPage.filePath + "coincase1.png"; // เปลี่ยน path ตามที่ใช้จริง
+            File textureFile = new File(imagePath);
+            if (textureFile.exists()) {
+                coinTexture = TextureIO.newTexture(textureFile, true);
+            } else {
+                System.err.println("Coin texture file not found: " + imagePath);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load coin texture: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void drawRobot(GL2 gl, float deltaTime) {
+        updateFrame(deltaTime); // อัพเดตเฟรม
+        if (robotFrames != null && robotFrames[currentFrame] != null) {
             gl.glEnable(GL2.GL_TEXTURE_2D);
-            robotTexture.bind(gl);
+            gl.glEnable(GL2.GL_BLEND); // ปิดการใช้งาน alpha blending
+            robotFrames[currentFrame].bind(gl);
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f);
             gl.glVertex2f(x, y);
@@ -556,17 +726,40 @@ public class Robot implements GLEventListener {
             gl.glTexCoord2f(0.0f, 1.0f);
             gl.glVertex2f(x, y + height);
             gl.glEnd();
+
             gl.glDisable(GL2.GL_TEXTURE_2D);
         }
     }
 
-    private void drawItemCounter() {
+    private void drawItemCounter(GL2 gl) {
+        int iconSize = 32; // กำหนดขนาดของไอคอนเหรียญ
+        int iconX = screenWidth - 630; // ตำแหน่ง X ที่วางเหรียญ
+        int iconY = screenHeight - 45; // ตำแหน่ง Y ที่วางเหรียญ
+
+        if (coinTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            coinTexture.bind(gl);
+
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(iconX, iconY);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(iconX + iconSize, iconY);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(iconX + iconSize, iconY + iconSize);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(iconX, iconY + iconSize);
+            gl.glEnd();
+
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+
+        // วาดตัวเลขข้างเหรียญ
         textRenderer.beginRendering(screenWidth, screenHeight);
         textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        textRenderer.draw("Items: " + (items.size() - getRemainingItemsCount()) + "/" + items.size(),
-                screenWidth - 600, screenHeight - 40);
+        textRenderer.draw((items.size() - getRemainingItemsCount()) + "/" + items.size(),
+                iconX + iconSize + 10, screenHeight - 40);
         textRenderer.endRendering();
-
     }
 
     private void drawButtons(GL2 gl) {
@@ -620,9 +813,9 @@ public class Robot implements GLEventListener {
     }
 
     private void drawWall(GL2 gl, float x, float y, float width, float height) {
-        if (wallTexture != null) {
+        if (wallFrames != null && wallFrames[currentWallFrame] != null) {
             gl.glEnable(GL2.GL_TEXTURE_2D);
-            wallTexture.bind(gl);
+            wallFrames[currentWallFrame].bind(gl); // ใช้เฟรมปัจจุบันจาก wallFrames
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f);
             gl.glVertex2f(x, y);
@@ -647,13 +840,30 @@ public class Robot implements GLEventListener {
     }
 
     private void drawExit(GL2 gl, float x, float y, float width, float height) {
-        gl.glColor3f(0.0f, 0.8f, 0.0f);
-        gl.glBegin(GL2.GL_QUADS);
-        gl.glVertex2f(x, y);
-        gl.glVertex2f(x + width, y);
-        gl.glVertex2f(x + width, y + height);
-        gl.glVertex2f(x, y + height);
-        gl.glEnd();
+        if (finishTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+            finishTexture.bind(gl);
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(x, y);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(x + width, y);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(x + width, y + height);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(x, y + height);
+            gl.glEnd();
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        } else {
+            // Fallback if texture is not loaded
+            gl.glColor3f(0.0f, 1.0f, 0.0f); // Green color for exit
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glVertex2f(x, y);
+            gl.glVertex2f(x + width, y);
+            gl.glVertex2f(x + width, y + height);
+            gl.glVertex2f(x, y + height);
+            gl.glEnd();
+        }
     }
 
     private void drawHealth(GL2 gl) {
@@ -686,6 +896,71 @@ public class Robot implements GLEventListener {
         }
     }
 
+    public void drawWinScreen(GL2 gl, int width, int height) {
+        if (winScreenTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+
+            winScreenTexture.bind(gl);
+
+            float textureWidth = winScreenTexture.getImageWidth(); // ความกว้างของรูปต้นฉบับ
+            float textureHeight = winScreenTexture.getImageHeight(); // ความสูงของรูปต้นฉบับ
+
+            float aspectRatio = textureWidth / textureHeight; // อัตราส่วนของรูปภาพ
+
+            float displayWidth = 400; // กำหนดความกว้างที่ต้องการแสดง
+            float displayHeight = displayWidth / aspectRatio; // คำนวณความสูงให้เหมาะสม
+
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(width / 2 - displayWidth / 2, height / 2 - displayHeight / 2);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(width / 2 + displayWidth / 2, height / 2 - displayHeight / 2);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(width / 2 + displayWidth / 2, height / 2 + displayHeight / 2);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(width / 2 - displayWidth / 2, height / 2 + displayHeight / 2);
+
+            gl.glEnd();
+
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+    }
+
+    public void drawGameOverScreen(GL2 gl, int width, int height) {
+        if (lostScreenTexture != null) {
+            gl.glEnable(GL2.GL_TEXTURE_2D);
+
+            lostScreenTexture.bind(gl);
+
+            float textureWidth = lostScreenTexture.getImageWidth(); // ความกว้างของรูปต้นฉบับ
+            float textureHeight = lostScreenTexture.getImageHeight(); // ความสูงของรูปต้นฉบับ
+
+            float aspectRatio = textureWidth / textureHeight; // อัตราส่วนของรูปภาพ
+
+            float displayWidth = 400; // กำหนดความกว้างที่ต้องการแสดง
+            float displayHeight = displayWidth / aspectRatio; // คำนวณความสูงให้เหมาะสม
+
+            gl.glBegin(GL2.GL_QUADS);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex2f(width / 2 - displayWidth / 2, height / 2 - displayHeight / 2);
+            gl.glTexCoord2f(1.0f, 0.0f);
+            gl.glVertex2f(width / 2 + displayWidth / 2, height / 2 - displayHeight / 2);
+            gl.glTexCoord2f(1.0f, 1.0f);
+            gl.glVertex2f(width / 2 + displayWidth / 2, height / 2 + displayHeight / 2);
+            gl.glTexCoord2f(0.0f, 1.0f);
+            gl.glVertex2f(width / 2 - displayWidth / 2, height / 2 + displayHeight / 2);
+            gl.glEnd();
+
+            gl.glDisable(GL2.GL_TEXTURE_2D);
+        }
+
+        // Render the "Press R to restart game!!!" message below the Game Over screen
+        textRenderer.beginRendering(width, height);
+        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f); // White color
+        textRenderer.draw("Press R to restart game!!!", width / 2 - 150, height / 2 - 100);
+        textRenderer.endRendering();
+    }
+
     @Override
     public void dispose(GLAutoDrawable drawable) {
         if (backgroundTexture != null)
@@ -699,9 +974,9 @@ public class Robot implements GLEventListener {
         if (textRenderer != null)
             textRenderer.dispose();
 
-            if (gameMusic != null && gameMusic.isRunning()) {
-                gameMusic.stop();
-            }
+        if (gameMusic != null && gameMusic.isRunning()) {
+            gameMusic.stop();
+        }
     }
 
     @Override

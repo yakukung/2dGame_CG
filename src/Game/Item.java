@@ -9,17 +9,22 @@ import java.util.Random;
 
 public class Item {
     private float x, y;
-    private final float size = 30; // เพิ่มขนาดจาก 20 เป็น 30
+    private final float size = 40;
     private boolean collected = false;
-    private Random random = new Random();
     private int level;
     private int itemIndex;
-    private Texture itemTexture;
+ 
+    
+    private Texture[] itemTextures = new Texture[5]; // เก็บภาพ 2 เฟรม
+    private int currentFrame = 0; // เฟรมปัจจุบัน
+    private long lastFrameTime = 0; // เวลาสุดท้ายที่เปลี่ยนเฟรม
+    private static final long FRAME_DURATION = 200; // เวลาเปลี่ยนเฟรม (มิลลิวินาที)
+
 
     private static final int[][][] LEVEL_ITEM_POSITIONS = {
         {{5, 2}}, // Level 1 - 1 item
         {{3, 5}, {5, 3}}, // Level 2 - 2 items
-        {{7, 7}, {3, 5}, {5, 2}} // Level 3 - 3 items
+        {{11, 3}, {1, 7}, {7, 9}} // Level 3 - 3 items
     };
 
     public Item(int level, int itemIndex) {
@@ -30,27 +35,33 @@ public class Item {
 
     private void loadItemTexture() {
         try {
-            String texturePath;
-
-            // ไปแก้ Path อยู่ที่ MainPage ทำไว้แบบใช้ทุกคลาสแล้ว
-            String imagePath = MainPage.filePath;
-            switch (level) {
-                case 1: texturePath = imagePath + "coin.png"; break;
-                case 2: texturePath = imagePath + "coin.png"; break;
-                case 3: texturePath = imagePath + "coin.png"; break;
-                default: texturePath = imagePath + "coin.png"; break;
-            }
-            File textureFile = new File(texturePath);
-            if (textureFile.exists()) {
-                itemTexture = TextureIO.newTexture(textureFile, true);
-            } else {
-                System.err.println("Item texture file not found: " + texturePath);
+        	String imagePath = MainPage.filePath;
+        	itemTextures = new Texture[5]; // 5 frame
+            for (int i = 0; i < itemTextures.length; i++) {
+                File coinCastFile = new File(imagePath + "coincase" + (i + 1) + ".png");
+                
+                // ตรวจสอบว่าไฟล์มีอยู่จริงหรือไม่
+                if (coinCastFile.exists()) {
+                	itemTextures[i] = TextureIO.newTexture(coinCastFile, true);
+                } else {
+                    System.err.println("Cannot load coin textures from : " + coinCastFile.getAbsolutePath());
+                }
             }
         } catch (IOException e) {
-            System.err.println("Failed to load item texture: " + e.getMessage());
+            System.err.println("Failed to load robot textures: " + e.getMessage());
             e.printStackTrace();
         }
     }
+    
+    public void updateFrame() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastFrameTime > FRAME_DURATION) {
+            currentFrame = (currentFrame + 1) % itemTextures.length; // สลับระหว่าง 0 และ 1
+            lastFrameTime = currentTime; // อัปเดตเวลา
+        }
+    }
+
+
 
     public void init(float mazeOffsetX, float mazeOffsetY, float cellWidth, float cellHeight, Maze maze) {
         respawnItem(mazeOffsetX, mazeOffsetY, cellWidth, cellHeight, maze);
@@ -72,29 +83,29 @@ public class Item {
         if (level <= LEVEL_ITEM_POSITIONS.length && itemIndex < LEVEL_ITEM_POSITIONS[level-1].length) {
             int[] pos = LEVEL_ITEM_POSITIONS[level-1][itemIndex];
             x = mazeOffsetX + pos[0] * cellWidth + (cellWidth - size) / 2;
-            y = mazeOffsetY + pos[1] * cellHeight + (cellHeight - size) / 2;
+            y = mazeOffsetY + pos[1] * cellHeight + (cellHeight - size) / 2 - 1;
             collected = false;
         }
     }
 
     public void draw(GL2 gl) {
-        if (!collected && itemTexture != null) {
-            // เพิ่มการรองรับความโปร่งใส
-            gl.glEnable(GL2.GL_BLEND);
-            gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+        if (!collected && itemTextures[currentFrame] != null) {
+            updateFrame(); // อัปเดตเฟรมก่อนวาด
             
             gl.glEnable(GL2.GL_TEXTURE_2D);
-            itemTexture.bind(gl);
+            itemTextures[currentFrame].bind(gl); // ใช้ภาพตามเฟรมปัจจุบัน
+
             gl.glBegin(GL2.GL_QUADS);
             gl.glTexCoord2f(0.0f, 0.0f); gl.glVertex2f(x, y);
             gl.glTexCoord2f(1.0f, 0.0f); gl.glVertex2f(x + size, y);
             gl.glTexCoord2f(1.0f, 1.0f); gl.glVertex2f(x + size, y + size);
             gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f(x, y + size);
             gl.glEnd();
+
             gl.glDisable(GL2.GL_TEXTURE_2D);
-            gl.glDisable(GL2.GL_BLEND); // ปิดการใช้งาน blend mode
         }
     }
+
 
     public boolean isCollected() {
         return collected;

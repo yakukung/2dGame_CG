@@ -74,31 +74,31 @@ public class GameUI {
         textRenderer.endRendering();
     }
 
-    public void drawWinScreen(TextRenderer textRenderer, int width, int height) {
-        textRenderer.beginRendering(width, height);
-        textRenderer.setColor(0.0f, 1.0f, 0.0f, 1.0f);
-
-        String winText = "CONGRATULATIONS!";
-        Rectangle2D winBounds = textRenderer.getBounds(winText);
-        int textX = (int) (width / 2 - winBounds.getWidth() / 2);
-        int textY = (int) (height / 2 + 100);
-        textRenderer.draw(winText, textX, textY);
-
-        String subText = "You've completed the maze!";
-        Rectangle2D subBounds = textRenderer.getBounds(subText);
-        int subX = (int) (width / 2 - subBounds.getWidth() / 2);
-        int subY = (int) (height / 2 + 50);
-        textRenderer.draw(subText, subX, subY);
-
-        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        String restartText = "Press R to Play Again";
-        Rectangle2D restartBounds = textRenderer.getBounds(restartText);
-        int restartX = (int) (width / 2 - restartBounds.getWidth() / 2);
-        int restartY = (int) (height / 2 - 50);
-        textRenderer.draw(restartText, restartX, restartY);
-
-        textRenderer.endRendering();
-    }
+//    public void drawWinScreen(TextRenderer textRenderer, int width, int height) {
+//        textRenderer.beginRendering(width, height);
+//        textRenderer.setColor(0.0f, 1.0f, 0.0f, 1.0f);
+//
+//        String winText = "CONGRATULATIONS!";
+//        Rectangle2D winBounds = textRenderer.getBounds(winText);
+//        int textX = (int) (width / 2 - winBounds.getWidth() / 2);
+//        int textY = (int) (height / 2 + 100);
+//        textRenderer.draw(winText, textX, textY);
+//
+//        String subText = "You've completed the maze!";
+//        Rectangle2D subBounds = textRenderer.getBounds(subText);
+//        int subX = (int) (width / 2 - subBounds.getWidth() / 2);
+//        int subY = (int) (height / 2 + 50);
+//        textRenderer.draw(subText, subX, subY);
+//
+//        textRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        String restartText = "Press R to Play Again";
+//        Rectangle2D restartBounds = textRenderer.getBounds(restartText);
+//        int restartX = (int) (width / 2 - restartBounds.getWidth() / 2);
+//        int restartY = (int) (height / 2 - 50);
+//        textRenderer.draw(restartText, restartX, restartY);
+//
+//        textRenderer.endRendering();
+//    }
 
     public boolean isMouseOverExit(int mouseX, int mouseY) {
         return exitButtonRect != null && exitButtonRect.contains(mouseX, mouseY);
